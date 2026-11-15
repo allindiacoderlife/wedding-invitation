@@ -1,7 +1,30 @@
 @import "tailwindcss";
 
-@layer base {
-  body {
-    @apply bg-stone-50 text-stone-800 antialiased min-h-screen font-sans;
-  }
+@theme {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #FAF8F5;
+  color: #2D2A26;
+  overflow-x: hidden;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Custom soft glow effects */
+.glow-gold {
+  box-shadow: 0 10px 40px -10px rgba(197, 160, 89, 0.25);
+}
+
+.glow-rose {
+  box-shadow: 0 15px 45px -10px rgba(225, 112, 133, 0.2);
 }

@@ -22,6 +22,13 @@ enum OtpType {
   PASSWORD_RESET
 }
 
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  DELIVERED
+}
+
 model User {
   id         String   @id @default(uuid())
   email      String   @unique
@@ -33,6 +40,7 @@ model User {
   updatedAt  DateTime @updatedAt
 
   otps       Otp[]
+  orders     InvitationOrder[]
 
   @@map("users")
 }
@@ -51,4 +59,64 @@ model Otp {
 
   @@index([email, type])
   @@map("otps")
+}
+
+model Template {
+  id           String            @id @default(uuid())
+  title        String
+  description  String?
+  videoUrl     String
+  thumbnailUrl String?
+  category     String            @default("Traditional")
+  price        Float             @default(0)
+  duration     String?
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  orders       InvitationOrder[]
+
+  @@map("templates")
+}
+
+model InvitationOrder {
+  id               String       @id @default(uuid())
+  orderNumber      String       @unique
+  status           OrderStatus  @default(PENDING)
+
+  templateId       String?
+  template         Template?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  userId           String?
+  user             User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Client Details
+  clientName       String
+  clientEmail      String
+  clientPhone      String
+
+  // Couple Details
+  brideName        String
+  groomName        String
+  brideParents     String?
+  groomParents     String?
+
+  // Page-by-page Functions (Haldi, Mehendi, Sangeet, Wedding, Reception, etc.)
+  events           Json
+
+  // Custom Preferences
+  musicPreference  String?
+  customTextNotes  String?
+  photoUrls        Json?
+
+  // Admin Fulfillment Details
+  finalVideoUrl    String?
+  adminNotes       String?
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([clientEmail])
+  @@index([status])
+  @@map("invitation_orders")
 }

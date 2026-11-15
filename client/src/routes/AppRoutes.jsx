@@ -7,6 +7,8 @@ import { HomePage } from '../pages/client/HomePage';
 import { LoginPage } from '../pages/client/LoginPage';
 import { RegisterPage } from '../pages/client/RegisterPage';
 import { VerifyOtpPage } from '../pages/client/VerifyOtpPage';
+import { CreateInvitationPage } from '../pages/client/CreateInvitationPage';
+import { TrackOrderPage } from '../pages/client/TrackOrderPage';
 
 import { AdminDashboard } from '../pages/admin/AdminDashboard';
 import { AdminGuests } from '../pages/admin/AdminGuests';
@@ -18,12 +20,14 @@ export const AppRoutes = () => {
       {/* Client Public Routes */}
       <Route element={<ClientLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/create-invitation" element={<CreateInvitationPage />} />
+        <Route path="/track-order" element={<TrackOrderPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-otp" element={<VerifyOtpPage />} />
       </Route>
 
-      {/* Admin Role-Protected Routes */}
+      {/* Admin Role-Protected Routes (Within Client App if accessed) */}
       <Route
         path="/admin"
         element={
