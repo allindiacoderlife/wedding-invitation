@@ -49,10 +49,13 @@ export default function Home() {
             </div>
           </div>
 
-          <nav className="flex items-center gap-8 text-xs font-sans uppercase tracking-[0.2em] font-medium text-zinc-600">
+          <nav className="flex items-center gap-6 sm:gap-8 text-xs font-sans uppercase tracking-[0.2em] font-medium text-zinc-600">
             <a href="#collection" className="hover:text-black transition-colors">
               Templates
             </a>
+            <Link href="/dashboard" className="hover:text-[#4F7C8F] transition-colors font-bold text-[#4F7C8F]">
+              Dashboard
+            </Link>
             <a href="#features" className="hover:text-black transition-colors hidden sm:inline-block">
               Features
             </a>

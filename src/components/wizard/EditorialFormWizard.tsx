@@ -22,6 +22,8 @@ import {
   Camera,
   Heart,
   Volume2,
+  LayoutDashboard,
+  ExternalLink,
 } from 'lucide-react';
 
 interface EditorialFormWizardProps {
@@ -42,6 +44,7 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
   const [isLivePlayerOpen, setIsLivePlayerOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
+  const [savedInvitationId, setSavedInvitationId] = useState<string | null>(null);
 
   const totalScenes = template.scenes.length;
   const isAudioReviewStep = currentStepIndex === totalScenes;
@@ -93,15 +96,34 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsRendering(true);
-    setTimeout(() => {
+    try {
+      // Save invitation to backend API
+      const res = await fetch('/api/invitations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId: template.id,
+          audioTrackId: customization.audioTrackId,
+          customAudioUrl: customization.customAudioUrl,
+          values: customization.values,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setSavedInvitationId(json.data.slug || json.data.id);
+      }
+    } catch (err) {
+      console.error('Failed to save invitation to API:', err);
+    } finally {
       setIsRendering(false);
       setIsSubmitted(true);
       if (onFinish) {
         onFinish(customization);
       }
-    }, 1200);
+    }
   };
 
   // Preview values extractors for live left card
@@ -110,19 +132,20 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
     customization.values['coupleNames'] ||
     (customization.values['brideName'] && customization.values['groomName']
       ? `${customization.values['brideName']} & ${customization.values['groomName']}`
-      : customization.values['brideName'] || 'Camille & Alexandre');
+      : customization.values['brideName'] || 'Ananya & Rohan');
 
   const displaySubtitle =
+    customization.values['auspiciousMantra'] ||
     customization.values['editorialPoem'] ||
     customization.values['invitationHeading'] ||
     customization.values['tagline'] ||
-    'Two souls, one timeless journey';
+    '|| Shree Ganeshay Namah ||';
 
   const displayDate =
     customization.values['editorialDateTag'] ||
     customization.values['weddingDate'] ||
     customization.values['weddingDateBrief'] ||
-    'Autumn in Provence • 24 . 10 . 2026';
+    'Sunday, 15 November 2026';
 
   const photoValue =
     customization.values['editorialPhoto'] ||
@@ -147,20 +170,30 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
 
           <div className="text-center">
             <span className="font-editorial text-xl sm:text-2xl italic tracking-wide text-[#121212]">
-              Marie &amp; Co.
+              Vaishno Video Vision
             </span>
             <span className="block text-[9px] uppercase tracking-[0.3em] text-zinc-400 font-sans">
-              Bespoke Invitation Studio
+              Wedding Video Invitation Studio
             </span>
           </div>
 
-          <button
-            onClick={() => setIsLivePlayerOpen(true)}
-            className="px-5 py-2.5 rounded-full bg-black text-white hover:bg-black/85 text-[11px] uppercase tracking-[0.2em] font-semibold flex items-center gap-2 shadow-sm transition-all hover:scale-105"
-          >
-            <Play className="w-3 h-3 fill-white" />
-            <span>Watch Motion</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full border border-black/15 text-[11px] uppercase tracking-[0.15em] font-semibold text-zinc-700 hover:text-black hover:border-black transition-all"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5 text-zinc-500" />
+              <span>Dashboard</span>
+            </Link>
+
+            <button
+              onClick={() => setIsLivePlayerOpen(true)}
+              className="px-5 py-2.5 rounded-full bg-black text-white hover:bg-black/85 text-[11px] uppercase tracking-[0.2em] font-semibold flex items-center gap-2 shadow-sm transition-all hover:scale-105"
+            >
+              <Play className="w-3 h-3 fill-white" />
+              <span>Watch Motion</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -176,20 +209,22 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
                 <button
                   key={scene.id}
                   onClick={() => setCurrentStepIndex(idx)}
-                  className={`flex items-center gap-2 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap ${isCurrent
+                  className={`flex items-center gap-2 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap ${
+                    isCurrent
                       ? 'text-black font-bold border-b-2 border-black pb-1'
                       : isDone
-                        ? 'text-zinc-700 font-medium hover:text-black'
-                        : 'text-zinc-400 hover:text-zinc-600'
-                    }`}
+                      ? 'text-zinc-700 font-medium hover:text-black'
+                      : 'text-zinc-400 hover:text-zinc-600'
+                  }`}
                 >
                   <span
-                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-sans ${isCurrent
+                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-sans ${
+                      isCurrent
                         ? 'bg-black text-white'
                         : isDone
-                          ? 'bg-zinc-200 text-zinc-700'
-                          : 'border border-black/20 text-zinc-400'
-                      }`}
+                        ? 'bg-zinc-200 text-zinc-700'
+                        : 'border border-black/20 text-zinc-400'
+                    }`}
                   >
                     {isDone ? <Check className="w-3 h-3 stroke-[3]" /> : idx + 1}
                   </span>
@@ -201,16 +236,18 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
             {/* Audio Step */}
             <button
               onClick={() => setCurrentStepIndex(totalScenes)}
-              className={`flex items-center gap-2 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap ${isAudioReviewStep
+              className={`flex items-center gap-2 text-xs uppercase tracking-[0.15em] transition-all whitespace-nowrap ${
+                isAudioReviewStep
                   ? 'text-black font-bold border-b-2 border-black pb-1'
                   : 'text-zinc-400 hover:text-zinc-600'
-                }`}
+              }`}
             >
               <span
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-sans ${isAudioReviewStep
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-sans ${
+                  isAudioReviewStep
                     ? 'bg-black text-white'
                     : 'border border-black/20 text-zinc-400'
-                  }`}
+                }`}
               >
                 {totalScenes + 1}
               </span>
@@ -248,7 +285,7 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
                     <span>STUDIO</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>HAUTE COUTURE</span>
+                    <span>VAISHNO VISION</span>
                     <span>2026</span>
                   </div>
                 </div>
@@ -371,12 +408,13 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
 
                           {typeof remaining === 'number' && (
                             <span
-                              className={`text-[11px] font-mono ${remaining === 0
+                              className={`text-[11px] font-mono ${
+                                remaining === 0
                                   ? 'text-rose-600 font-bold'
                                   : remaining <= 5
-                                    ? 'text-amber-600'
-                                    : 'text-zinc-400'
-                                }`}
+                                  ? 'text-amber-600'
+                                  : 'text-zinc-400'
+                              }`}
                             >
                               {remaining} left
                             </span>
@@ -392,10 +430,11 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
                           onChange={(e) =>
                             handleFieldValueChange(field.id, e.target.value)
                           }
-                          className={`w-full px-4 py-3.5 rounded-none border text-sm font-sans transition-all focus:outline-none ${errors[field.id]
+                          className={`w-full px-4 py-3.5 rounded-none border text-sm font-sans transition-all focus:outline-none ${
+                            errors[field.id]
                               ? 'border-rose-400 bg-rose-50/20'
                               : 'border-black/15 focus:border-black bg-white text-zinc-900'
-                            }`}
+                          }`}
                         />
 
                         {field.helpText && !errors[field.id] && (
@@ -507,12 +546,12 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
                       {isRendering ? (
                         <>
                           <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Rendering...</span>
+                          <span>Saving to Dashboard...</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-3.5 h-3.5" />
-                          <span>Generate 1080p Video</span>
+                          <span>Save &amp; Generate 1080p</span>
                         </>
                       )}
                     </button>
@@ -530,13 +569,13 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
 
             <div className="space-y-2">
               <span className="text-[10px] font-sans uppercase tracking-[0.3em] text-zinc-400">
-                Invitation Generated
+                Invitation Saved &amp; Ready
               </span>
               <h2 className="font-editorial text-3xl sm:text-4xl font-normal text-zinc-900">
                 {displayCouple}
               </h2>
               <p className="text-xs font-sans text-zinc-500 leading-relaxed max-w-sm mx-auto">
-                Your wedding video invitation is ready with synchronized music and 1080p composition.
+                Your wedding video invitation is saved in your dashboard with synchronized music and ready for your guests.
               </p>
             </div>
 
@@ -549,13 +588,30 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
                 <Play className="w-4 h-4 fill-white" /> Watch 60fps Video
               </button>
 
+              <Link
+                href="/dashboard"
+                className="w-full py-3.5 rounded-full bg-[#4F7C8F] text-white text-xs font-sans uppercase tracking-[0.2em] font-semibold hover:bg-[#3D6373] transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <LayoutDashboard className="w-4 h-4" /> Go to Dashboard
+              </Link>
+
+              {savedInvitationId && (
+                <Link
+                  href={`/invite/${savedInvitationId}`}
+                  target="_blank"
+                  className="w-full py-3.5 rounded-full border border-black/20 text-xs font-sans uppercase tracking-[0.2em] font-semibold hover:border-black transition-colors flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" /> Open Live Guest Card
+                </Link>
+              )}
+
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(
                   `Check out our wedding invitation for ${displayCouple}!`
                 )}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3.5 rounded-full border border-black/20 text-xs font-sans uppercase tracking-[0.2em] font-semibold hover:border-black transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-full border border-zinc-200 text-xs font-sans uppercase tracking-[0.2em] font-semibold hover:border-black transition-colors flex items-center justify-center gap-2"
               >
                 <Share2 className="w-4 h-4" /> Share On WhatsApp
               </a>
@@ -584,4 +640,3 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
     </div>
   );
 };
-
