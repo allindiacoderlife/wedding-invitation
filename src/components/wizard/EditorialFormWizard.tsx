@@ -12,6 +12,7 @@ import { ImageUploadCropper } from './ImageUploadCropper';
 import { AudioSelector } from './AudioSelector';
 import { LiveVideoPlayerModal } from '../video/LiveVideoPlayerModal';
 import { CustomCursor } from '@/components/gsap/CustomCursor';
+import { UserNavMenu } from '@/components/navbar/UserNavMenu';
 import {
   ArrowLeft,
   ArrowRight,
@@ -185,6 +186,8 @@ export const EditorialFormWizard: React.FC<EditorialFormWizardProps> = ({
               <LayoutDashboard className="w-3.5 h-3.5 text-zinc-500" />
               <span>Dashboard</span>
             </Link>
+
+            <UserNavMenu />
 
             <button
               onClick={() => setIsLivePlayerOpen(true)}

@@ -5,6 +5,7 @@ import { CustomCursor } from '@/components/gsap/CustomCursor';
 import { GsapTextReveal } from '@/components/gsap/GsapTextReveal';
 import { GsapMagneticButton } from '@/components/gsap/GsapMagneticButton';
 import { GsapFloatingGallery } from '@/components/gsap/GsapFloatingGallery';
+import { UserNavMenu } from '@/components/navbar/UserNavMenu';
 import {
   Sparkles,
   ArrowRight,
@@ -49,7 +50,7 @@ export default function Home() {
             </div>
           </div>
 
-          <nav className="flex items-center gap-6 sm:gap-8 text-xs font-sans uppercase tracking-[0.2em] font-medium text-zinc-600">
+          <nav className="flex items-center gap-5 sm:gap-7 text-xs font-sans uppercase tracking-[0.2em] font-medium text-zinc-600">
             <a href="#collection" className="hover:text-black transition-colors">
               Templates
             </a>
@@ -59,6 +60,7 @@ export default function Home() {
             <a href="#features" className="hover:text-black transition-colors hidden sm:inline-block">
               Features
             </a>
+            <UserNavMenu />
             <GsapMagneticButton
               href={`/customize/${templates[0]?.id || 'royal-rajasthani-wedding'}`}
               className="py-2.5 px-5 text-[10px]"

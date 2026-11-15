@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { InvitationRecord, DashboardMetrics, RenderJob } from '@/types/invitation';
 import { getAllTemplates } from '@/data/templates';
 import { LiveVideoPlayerModal } from '@/components/video/LiveVideoPlayerModal';
+import { UserNavMenu } from '@/components/navbar/UserNavMenu';
 import {
   LayoutDashboard,
   Heart,
@@ -212,6 +213,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <Plus className="w-3.5 h-3.5" />
             <span>Create Invitation</span>
           </button>
+
+          <UserNavMenu />
         </div>
       </header>
 
