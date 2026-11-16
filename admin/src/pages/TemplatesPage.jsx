@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Input, Textarea, Select } from '../components/ui/Input';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/Dialog';
 import { VideoPlayer } from '../components/ui/VideoPlayer';
+import { API_BASE_URL } from '../config/api';
 
 export const TemplatesPage = () => {
   const [templates, setTemplates] = useState([]);
@@ -30,7 +31,7 @@ export const TemplatesPage = () => {
 
   const fetchTemplates = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/templates');
+      const res = await fetch(`${API_BASE_URL}/api/templates`);
       const data = await res.json();
       if (data.success && data.templates?.length > 0) {
         setTemplates(data.templates);
@@ -85,7 +86,7 @@ export const TemplatesPage = () => {
 
     try {
       const token = localStorage.getItem('wedding_admin_token');
-      const res = await fetch('http://localhost:8000/api/templates', {
+      const res = await fetch(`${API_BASE_URL}/api/templates`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +135,7 @@ export const TemplatesPage = () => {
     if (!window.confirm('Are you sure you want to delete this video template?')) return;
     try {
       const token = localStorage.getItem('wedding_admin_token');
-      await fetch(`http://localhost:8000/api/templates/${id}`, {
+      await fetch(`${API_BASE_URL}/api/templates/${id}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });

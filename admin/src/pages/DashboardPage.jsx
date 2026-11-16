@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { API_BASE_URL } from '../config/api';
 
 export const DashboardPage = () => {
   const [orders, setOrders] = useState([]);
@@ -13,7 +14,7 @@ export const DashboardPage = () => {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem('wedding_admin_token');
-        const res = await fetch('http://localhost:8000/api/orders/admin', {
+        const res = await fetch(`${API_BASE_URL}/api/orders/admin`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();

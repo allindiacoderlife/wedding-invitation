@@ -14,4 +14,12 @@ export const config = {
         pass: process.env.SMTP_PASS || '',
         from: process.env.EMAIL_FROM || 'Wedding Invitation <no-reply@weddinginvitation.com>',
     },
+    cors: {
+        clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+        adminUrl: process.env.ADMIN_URL || 'http://localhost:5174',
+        allowedOrigins: (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:5175')
+            .split(',')
+            .map(origin => origin.trim().replace(/\/$/, ''))
+            .filter(Boolean),
+    },
 };

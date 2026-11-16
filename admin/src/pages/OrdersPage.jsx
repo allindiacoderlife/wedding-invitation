@@ -4,6 +4,7 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Input, Textarea, Select } from '../components/ui/Input';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/Dialog';
+import { API_BASE_URL } from '../config/api';
 
 export const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -23,7 +24,7 @@ export const OrdersPage = () => {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('wedding_admin_token');
-      const res = await fetch('http://localhost:8000/api/orders/admin', {
+      const res = await fetch(`${API_BASE_URL}/api/orders/admin`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
@@ -175,7 +176,7 @@ export const OrdersPage = () => {
 
     try {
       const token = localStorage.getItem('wedding_admin_token');
-      await fetch(`http://localhost:8000/api/orders/admin/${selectedOrder.id}`, {
+      await fetch(`${API_BASE_URL}/api/orders/admin/${selectedOrder.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

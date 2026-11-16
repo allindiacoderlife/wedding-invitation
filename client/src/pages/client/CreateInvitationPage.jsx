@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { VideoPlayer } from '../../components/common/VideoPlayer';
+import { API_BASE_URL } from '../../config/api';
 
 export const CreateInvitationPage = () => {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ export const CreateInvitationPage = () => {
 
   const fetchTemplates = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/templates');
+      const res = await fetch(`${API_BASE_URL}/api/templates`);
       const data = await res.json();
       if (data.success && data.templates?.length > 0) {
         setTemplates(data.templates);
@@ -156,7 +157,7 @@ export const CreateInvitationPage = () => {
     };
 
     try {
-      const res = await fetch('http://localhost:8000/api/orders', {
+      const res = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

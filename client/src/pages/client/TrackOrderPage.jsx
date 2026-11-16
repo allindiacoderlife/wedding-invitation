@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { VideoPlayer } from '../../components/common/VideoPlayer';
+import { API_BASE_URL } from '../../config/api';
 
 export const TrackOrderPage = () => {
   const [searchParams] = useSearchParams();
@@ -25,7 +26,7 @@ export const TrackOrderPage = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`http://localhost:8000/api/orders/track/${encodeURIComponent(q.trim())}`);
+      const res = await fetch(`${API_BASE_URL}/api/orders/track/${encodeURIComponent(q.trim())}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Order not found');
       setOrder(data.order);

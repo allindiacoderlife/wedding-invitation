@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { API_BASE_URL } from '../../config/api';
 
 export const VerifyOtpPage = () => {
   const [searchParams] = useSearchParams();
@@ -24,7 +25,7 @@ export const VerifyOtpPage = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/auth/verify-otp', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp, type: initialType }),
@@ -58,7 +59,7 @@ export const VerifyOtpPage = () => {
     setResending(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/auth/resend-otp', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/resend-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, type: initialType }),

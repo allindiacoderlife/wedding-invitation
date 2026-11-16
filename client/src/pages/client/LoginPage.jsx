@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { API_BASE_URL } from '../../config/api';
 
 export const LoginPage = () => {
   const [mode, setMode] = useState('password'); // 'password' or 'otp'
@@ -21,7 +22,7 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/auth/login', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -55,7 +56,7 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/auth/request-login-otp', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/request-login-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
