@@ -31,26 +31,8 @@ export const TrackOrderPage = () => {
       if (!res.ok) throw new Error(data.message || 'Order not found');
       setOrder(data.order);
     } catch (err) {
-      // Demo mock fallback if searching for common sample
-      if (q.toUpperCase().includes('WED')) {
-        setOrder({
-          orderNumber: q.toUpperCase(),
-          clientName: 'Pooja Sharma',
-          brideName: 'Pooja',
-          groomName: 'Rohan',
-          status: 'IN_PROGRESS',
-          musicPreference: 'Kesariya (Flute Instrumental)',
-          finalVideoUrl: '',
-          adminNotes: 'Our video editor is currently animating your Haldi & Sangeet slides in 1080p Full HD.',
-          events: [
-            { name: 'Mehendi & Sangeet', date: 'Nov 20, 2026', venue: 'Royal Palace Banquet' },
-            { name: 'Wedding Ceremony', date: 'Nov 21, 2026', venue: 'Lotus Grand Mandap' },
-          ],
-        });
-      } else {
-        setError(err.message || 'No wedding invitation found with this tracking number.');
-        setOrder(null);
-      }
+      setError(err.message || 'No wedding invitation found with this tracking number.');
+      setOrder(null);
     } finally {
       setLoading(false);
     }
@@ -101,7 +83,7 @@ export const TrackOrderPage = () => {
             required
             value={orderNumber}
             onChange={(e) => setOrderNumber(e.target.value)}
-            placeholder="Enter Order Tracking Number (e.g. WED-89412)"
+            placeholder="Enter Order Tracking Number (e.g. WED-10001)"
             className="flex-1 px-4 py-3 rounded-2xl border border-stone-200 text-xs font-mono uppercase tracking-wider focus:outline-rose-600"
           />
           <button

@@ -9,68 +9,23 @@ export const DashboardPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Default mock data for instant preview + API fetch
   useEffect(() => {
     const fetchOrders = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('wedding_admin_token');
         const res = await fetch(`${API_BASE_URL}/api/orders/admin`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
-        if (data.success && data.orders) {
+        if (data.success && Array.isArray(data.orders)) {
           setOrders(data.orders);
+        } else {
+          setOrders([]);
         }
-      } catch {
-        // Fallback demo orders for instant showcase
-        setOrders([
-          {
-            id: 'ord-1',
-            orderNumber: 'WED-10842',
-            clientName: 'Pooja Sharma',
-            clientEmail: 'pooja@example.com',
-            clientPhone: '+91 98765 43210',
-            brideName: 'Pooja',
-            groomName: 'Rohan',
-            status: 'PENDING',
-            createdAt: new Date().toISOString(),
-            events: [
-              { name: 'Mehendi & Sangeet', date: '2026-11-20', time: '5:00 PM', venue: 'Royal Palace Banquet' },
-              { name: 'Wedding Ceremony', date: '2026-11-21', time: '10:00 AM', venue: 'Lotus Grand Mandap' },
-            ],
-          },
-          {
-            id: 'ord-2',
-            orderNumber: 'WED-10841',
-            clientName: 'Alexander Vance',
-            clientEmail: 'alex@example.com',
-            clientPhone: '+1 555-0192',
-            brideName: 'Sophia',
-            groomName: 'Alexander',
-            status: 'IN_PROGRESS',
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
-            events: [
-              { name: 'Ceremony', date: '2026-10-24', time: '4:30 PM', venue: 'St. Sophia Chapel' },
-              { name: 'Reception Banquet', date: '2026-10-24', time: '7:30 PM', venue: 'Botanical Pavilion' },
-            ],
-          },
-          {
-            id: 'ord-3',
-            orderNumber: 'WED-10839',
-            clientName: 'Kavita Patel',
-            clientEmail: 'kavita@example.com',
-            clientPhone: '+91 99887 76655',
-            brideName: 'Kavita',
-            groomName: 'Dev',
-            status: 'COMPLETED',
-            finalVideoUrl: 'https://drive.google.com/file/d/demo-video-link/view',
-            createdAt: new Date(Date.now() - 172800000).toISOString(),
-            events: [
-              { name: 'Haldi', date: '2026-12-05', time: '10:00 AM', venue: 'Patel Courtyard' },
-              { name: 'Wedding Muhurtham', date: '2026-12-06', time: '11:15 AM', venue: 'Grand Hyatt' },
-            ],
-          },
-        ]);
+      } catch (err) {
+        console.error('Failed to fetch dashboard orders:', err);
+        setOrders([]);
       } finally {
         setLoading(false);
       }
@@ -233,30 +188,51 @@ export const DashboardPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
-                {orders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-stone-50/60 transition">
-                    <td className="py-3 px-4 font-mono font-bold text-stone-900">{ord.orderNumber}</td>
-                    <td className="py-3 px-4 font-semibold text-stone-800">
-                      {ord.brideName} & {ord.groomName}
-                    </td>
-                    <td className="py-3 px-4 text-stone-500">
-                      {ord.events?.length || 0} Function(s)
-                    </td>
-                    <td className="py-3 px-4 text-stone-500">
-                      {ord.clientPhone}
-                    </td>
-                    <td className="py-3 px-4">
-                      {getStatusBadge(ord.status)}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <Link to="/orders">
-                        <Button variant="outline" size="sm">
-                          Review Details
-                        </Button>
-                      </Link>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-stone-500">
+                      <div className="flex items-center justify-center space-x-2">
+                        <span className="animate-spin text-sm">⏳</span>
+                        <span className="text-xs">Loading orders...</span>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                ) : orders.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-10 text-center text-stone-500">
+                      <div className="flex flex-col items-center justify-center space-y-1">
+                        <span className="text-2xl">📋</span>
+                        <p className="font-semibold text-stone-700 text-xs">No client orders yet</p>
+                        <p className="text-stone-400 text-[11px]">New orders placed by clients will appear here automatically.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  orders.slice(0, 5).map((ord) => (
+                    <tr key={ord.id} className="hover:bg-stone-50/60 transition">
+                      <td className="py-3 px-4 font-mono font-bold text-stone-900">{ord.orderNumber}</td>
+                      <td className="py-3 px-4 font-semibold text-stone-800">
+                        {ord.brideName} & {ord.groomName}
+                      </td>
+                      <td className="py-3 px-4 text-stone-500">
+                        {ord.events?.length || 0} Function(s)
+                      </td>
+                      <td className="py-3 px-4 text-stone-500">
+                        {ord.clientPhone}
+                      </td>
+                      <td className="py-3 px-4">
+                        {getStatusBadge(ord.status)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <Link to="/orders">
+                          <Button variant="outline" size="sm">
+                            Review Details
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

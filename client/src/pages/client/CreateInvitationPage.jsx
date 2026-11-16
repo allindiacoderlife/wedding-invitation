@@ -66,52 +66,24 @@ export const CreateInvitationPage = () => {
   }, []);
 
   const fetchTemplates = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/templates`);
       const data = await res.json();
-      if (data.success && data.templates?.length > 0) {
+      if (data.success && Array.isArray(data.templates) && data.templates.length > 0) {
         setTemplates(data.templates);
         setSelectedTemplate(data.templates[0]);
-        return;
+      } else {
+        setTemplates([]);
+        setSelectedTemplate(null);
       }
-    } catch {
-      // fallback
+    } catch (err) {
+      console.error('Failed to load templates:', err);
+      setTemplates([]);
+      setSelectedTemplate(null);
+    } finally {
+      setLoading(false);
     }
-
-    const defaultTpls = [
-      {
-        id: 'tpl-1',
-        title: 'Royal Heritage & Gold Palace',
-        description: 'Traditional royal palace architecture with golden mandap animations and sitar background music. 4 Pages included.',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80',
-        category: 'Royal',
-        duration: '60s',
-        price: 69,
-      },
-      {
-        id: 'tpl-2',
-        title: 'Blush Floral & Golden Arch',
-        description: 'Pastel pink watercolor blossoms, elegant typography, and romantic violin melodies. Includes Haldi, Sangeet & Reception.',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80',
-        category: 'Floral',
-        duration: '45s',
-        price: 49,
-      },
-      {
-        id: 'tpl-3',
-        title: 'Modern Minimalist Typography',
-        description: 'Clean luxury black-and-white editorial aesthetic with modern calligraphy. Perfect for contemporary city weddings.',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=80',
-        category: 'Minimalist',
-        duration: '50s',
-        price: 39,
-      },
-    ];
-    setTemplates(defaultTpls);
-    setSelectedTemplate(defaultTpls[0]);
   };
 
   const handleInputChange = (e) => {
@@ -147,8 +119,11 @@ export const CreateInvitationPage = () => {
     setFormData({ ...formData, events: updated });
   };
 
+  const [submitError, setSubmitError] = useState('');
+
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
+    setSubmitError('');
     setLoading(true);
 
     const payload = {
@@ -164,29 +139,18 @@ export const CreateInvitationPage = () => {
       });
 
       const data = await res.json();
-      if (data.success && data.order) {
-        setOrderResult(data.order);
-        setStep(5);
-        return;
+      if (!res.ok || !data.success || !data.order) {
+        throw new Error(data.message || 'Failed to submit invitation order. Please try again.');
       }
-    } catch {
-      // fallback mock order result
-    }
 
-    const mockOrder = {
-      orderNumber: `WED-${Math.floor(100000 + Math.random() * 900000)}`,
-      clientName: formData.clientName,
-      clientEmail: formData.clientEmail,
-      clientPhone: formData.clientPhone,
-      brideName: formData.brideName,
-      groomName: formData.groomName,
-      status: 'PENDING',
-      events: formData.events,
-      template: selectedTemplate,
-    };
-    setOrderResult(mockOrder);
-    setStep(5);
-    setLoading(false);
+      setOrderResult(data.order);
+      setStep(5);
+    } catch (err) {
+      console.error('Submission error:', err);
+      setSubmitError(err.message || 'Unable to connect to the studio server. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -225,65 +189,75 @@ export const CreateInvitationPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {templates.map((tpl) => (
-              <div
-                key={tpl.id}
-                onClick={() => setSelectedTemplate(tpl)}
-                className={`cursor-pointer rounded-2xl overflow-hidden border transition bg-white shadow-2xs flex flex-col justify-between ${
-                  selectedTemplate?.id === tpl.id
-                    ? 'border-rose-700 ring-2 ring-rose-300 shadow-md scale-[1.02]'
-                    : 'border-stone-200 hover:border-stone-300'
-                }`}
-              >
-                <div>
-                  <div className="relative aspect-video bg-stone-900">
-                    <img
-                      src={tpl.thumbnailUrl}
-                      alt={tpl.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur-xs">
-                      {tpl.category}
+          {templates.length === 0 ? (
+            <div className="bg-white border-2 border-dashed border-stone-200 rounded-3xl p-12 text-center max-w-md mx-auto space-y-3">
+              <span className="text-4xl">🎬</span>
+              <h3 className="font-bold text-stone-900 text-sm">No Video Templates Available Yet</h3>
+              <p className="text-xs text-stone-500 leading-relaxed">
+                The studio administrator has not published any wedding video templates yet. Please check back shortly or contact our team directly.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {templates.map((tpl) => (
+                <div
+                  key={tpl.id}
+                  onClick={() => setSelectedTemplate(tpl)}
+                  className={`cursor-pointer rounded-2xl overflow-hidden border transition bg-white shadow-2xs flex flex-col justify-between ${
+                    selectedTemplate?.id === tpl.id
+                      ? 'border-rose-700 ring-2 ring-rose-300 shadow-md scale-[1.02]'
+                      : 'border-stone-200 hover:border-stone-300'
+                  }`}
+                >
+                  <div>
+                    <div className="relative aspect-video bg-stone-900">
+                      <img
+                        src={tpl.thumbnailUrl}
+                        alt={tpl.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur-xs">
+                        {tpl.category}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActivePreviewVideo(tpl.videoUrl);
+                        }}
+                        className="absolute inset-0 m-auto w-10 h-10 rounded-full bg-white/90 text-stone-900 flex items-center justify-center font-bold shadow-md hover:scale-110 transition cursor-pointer"
+                      >
+                        ▶
+                      </button>
                     </div>
+
+                    <div className="p-4 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-stone-900 text-sm">{tpl.title}</h3>
+                        <span className="text-xs font-extrabold text-stone-900">${tpl.price}</span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
+                        {tpl.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 pt-0">
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActivePreviewVideo(tpl.videoUrl);
-                      }}
-                      className="absolute inset-0 m-auto w-10 h-10 rounded-full bg-white/90 text-stone-900 flex items-center justify-center font-bold shadow-md hover:scale-110 transition"
+                      className={`w-full py-2 rounded-xl text-xs font-bold transition ${
+                        selectedTemplate?.id === tpl.id
+                          ? 'bg-rose-800 text-white shadow-xs'
+                          : 'border border-stone-200 text-stone-700 hover:bg-stone-50'
+                      }`}
                     >
-                      ▶
+                      {selectedTemplate?.id === tpl.id ? '✓ Selected Template' : 'Choose This Style'}
                     </button>
                   </div>
-
-                  <div className="p-4 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-stone-900 text-sm">{tpl.title}</h3>
-                      <span className="text-xs font-extrabold text-stone-900">${tpl.price}</span>
-                    </div>
-                    <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
-                      {tpl.description}
-                    </p>
-                  </div>
                 </div>
-
-                <div className="p-4 pt-0">
-                  <button
-                    type="button"
-                    className={`w-full py-2 rounded-xl text-xs font-bold transition ${
-                      selectedTemplate?.id === tpl.id
-                        ? 'bg-rose-800 text-white shadow-xs'
-                        : 'border border-stone-200 text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    {selectedTemplate?.id === tpl.id ? '✓ Selected Template' : 'Choose This Style'}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className="flex justify-end pt-4">
             <button
@@ -536,6 +510,11 @@ export const CreateInvitationPage = () => {
           </div>
 
           <form onSubmit={handleSubmitOrder} className="bg-white p-8 rounded-3xl border border-stone-200 shadow-sm space-y-6">
+            {submitError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+                {submitError}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1">
                 Background Music / Song Choice

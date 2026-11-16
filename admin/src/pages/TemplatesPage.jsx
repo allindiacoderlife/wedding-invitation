@@ -30,50 +30,21 @@ export const TemplatesPage = () => {
   }, []);
 
   const fetchTemplates = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/templates`);
       const data = await res.json();
-      if (data.success && data.templates?.length > 0) {
+      if (data.success && Array.isArray(data.templates)) {
         setTemplates(data.templates);
-        return;
+      } else {
+        setTemplates([]);
       }
-    } catch {
-      // fallback
+    } catch (err) {
+      console.error('Failed to fetch templates:', err);
+      setTemplates([]);
+    } finally {
+      setLoading(false);
     }
-
-    // Default starter video templates for instant demonstration
-    setTemplates([
-      {
-        id: 'tpl-1',
-        title: 'Royal Heritage & Gold Palace',
-        description: 'Traditional royal palace architecture with golden mandap animations and sitar background music. 4 Pages included.',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80',
-        category: 'Royal',
-        duration: '60s',
-        price: 69,
-      },
-      {
-        id: 'tpl-2',
-        title: 'Blush Floral & Golden Arch',
-        description: 'Pastel pink watercolor blossoms, elegant typography, and romantic violin melodies. Includes Haldi, Sangeet & Reception.',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80',
-        category: 'Floral',
-        duration: '45s',
-        price: 49,
-      },
-      {
-        id: 'tpl-3',
-        title: 'Modern Minimalist Typography',
-        description: 'Clean luxury black-and-white editorial aesthetic with modern calligraphy. Perfect for contemporary city weddings.',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=80',
-        category: 'Minimalist',
-        duration: '50s',
-        price: 39,
-      },
-    ]);
   };
 
   const handleInputChange = (e) => {
@@ -161,84 +132,104 @@ export const TemplatesPage = () => {
         </Button>
       </div>
 
-      {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {templates.map((tpl) => (
-          <Card key={tpl.id} className="overflow-hidden flex flex-col justify-between group hover:shadow-md transition">
-            <div>
-              {/* Video Thumbnail or Live Video Container */}
-              <div className="relative aspect-video bg-stone-900 overflow-hidden">
-                {tpl.thumbnailUrl ? (
-                  <img
-                    src={tpl.thumbnailUrl}
-                    alt={tpl.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-stone-950 text-stone-600">
-                    <span className="text-3xl">🎬</span>
+      {/* Templates Grid / Empty State */}
+      {loading ? (
+        <div className="py-20 text-center">
+          <span className="text-2xl animate-spin inline-block">⏳</span>
+          <p className="text-xs font-medium text-stone-500 mt-2">Loading templates...</p>
+        </div>
+      ) : templates.length === 0 ? (
+        <Card className="p-16 text-center border-dashed border-2 border-stone-200 bg-stone-50/50">
+          <div className="flex flex-col items-center justify-center space-y-3 max-w-sm mx-auto">
+            <span className="text-4xl">🎬</span>
+            <h3 className="font-bold text-stone-900 text-sm">No Video Templates Added Yet</h3>
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Upload your video preview links (Google Drive, MP4, or YouTube) so prospective couples can preview and choose a style for their wedding invitation.
+            </p>
+            <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)} className="mt-2">
+              + Add First Video Template
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {templates.map((tpl) => (
+            <Card key={tpl.id} className="overflow-hidden flex flex-col justify-between group hover:shadow-md transition">
+              <div>
+                {/* Video Thumbnail or Live Video Container */}
+                <div className="relative aspect-video bg-stone-900 overflow-hidden">
+                  {tpl.thumbnailUrl ? (
+                    <img
+                      src={tpl.thumbnailUrl}
+                      alt={tpl.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-stone-950 text-stone-600">
+                      <span className="text-3xl">🎬</span>
+                    </div>
+                  )}
+
+                  {/* Duration & Category Badges */}
+                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                    <Badge variant="default" className="bg-black/70 backdrop-blur-xs text-[9px]">
+                      {tpl.category}
+                    </Badge>
+                    <Badge variant="secondary" className="bg-white/90 text-stone-900 text-[9px]">
+                      {tpl.duration}
+                    </Badge>
                   </div>
-                )}
 
-                {/* Duration & Category Badges */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <Badge variant="default" className="bg-black/70 backdrop-blur-xs text-[9px]">
-                    {tpl.category}
-                  </Badge>
-                  <Badge variant="secondary" className="bg-white/90 text-stone-900 text-[9px]">
-                    {tpl.duration}
-                  </Badge>
+                  {/* Play Button Overlay */}
+                  <button
+                    type="button"
+                    onClick={() => setActivePreviewVideo(tpl.videoUrl)}
+                    className="absolute inset-0 m-auto w-11 h-11 rounded-full bg-white/90 text-stone-900 flex items-center justify-center shadow-lg hover:scale-110 transition text-sm font-bold cursor-pointer"
+                    title="Play Sample Video"
+                  >
+                    ▶
+                  </button>
                 </div>
 
-                {/* Play Button Overlay */}
-                <button
-                  type="button"
-                  onClick={() => setActivePreviewVideo(tpl.videoUrl)}
-                  className="absolute inset-0 m-auto w-11 h-11 rounded-full bg-white/90 text-stone-900 flex items-center justify-center shadow-lg hover:scale-110 transition text-sm font-bold"
-                  title="Play Sample Video"
-                >
-                  ▶
-                </button>
+                {/* Template Info */}
+                <CardHeader className="p-4 pb-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="text-sm font-bold">{tpl.title}</CardTitle>
+                    <span className="text-xs font-extrabold text-stone-900">${tpl.price}</span>
+                  </div>
+                  <CardDescription className="line-clamp-2 text-[11px] mt-1">
+                    {tpl.description || 'Customizable page-by-page wedding invitation video.'}
+                  </CardDescription>
+                </CardHeader>
               </div>
 
-              {/* Template Info */}
-              <CardHeader className="p-4 pb-2">
-                <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-sm font-bold">{tpl.title}</CardTitle>
-                  <span className="text-xs font-extrabold text-stone-900">${tpl.price}</span>
+              <CardFooter className="p-4 pt-2 flex items-center justify-between border-t border-stone-100">
+                <span className="text-[10px] text-stone-400 font-mono">
+                  Source: {tpl.videoUrl ? 'Video linked' : 'No link'}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActivePreviewVideo(tpl.videoUrl)}
+                    className="text-[11px] h-7 px-2.5"
+                  >
+                    Preview
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(tpl.id)}
+                    className="text-[11px] h-7 px-2.5 text-red-600 hover:bg-red-50"
+                  >
+                    Delete
+                  </Button>
                 </div>
-                <CardDescription className="line-clamp-2 text-[11px] mt-1">
-                  {tpl.description || 'Customizable page-by-page wedding invitation video.'}
-                </CardDescription>
-              </CardHeader>
-            </div>
-
-            <CardFooter className="p-4 pt-2 flex items-center justify-between border-t border-stone-100">
-              <span className="text-[10px] text-stone-400 font-mono">
-                Source: {tpl.videoUrl ? 'Video linked' : 'No link'}
-              </span>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setActivePreviewVideo(tpl.videoUrl)}
-                  className="text-[11px] h-7 px-2.5"
-                >
-                  Preview
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDelete(tpl.id)}
-                  className="text-[11px] h-7 px-2.5 text-red-600 hover:bg-red-50"
-                >
-                  Delete
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Add New Template Dialog (Shadcn style) */}
       <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="max-w-lg">

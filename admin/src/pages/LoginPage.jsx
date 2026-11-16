@@ -40,19 +40,6 @@ export const LoginPage = () => {
     }
   };
 
-  const handleDemoAdminLogin = () => {
-    login(
-      {
-        id: 'admin-123',
-        name: 'Wedding Organizer (Demo)',
-        email: 'admin@wedding.com',
-        role: 'ADMIN',
-      },
-      'demo-admin-token-jwt'
-    );
-    navigate('/', { replace: true });
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-stone-200 p-8 space-y-6">
@@ -98,21 +85,11 @@ export const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-stone-900 text-white font-semibold text-xs hover:bg-black transition shadow-xs disabled:opacity-60"
+            className="w-full py-2.5 rounded-xl bg-stone-900 text-white font-semibold text-xs hover:bg-black transition shadow-xs disabled:opacity-60 cursor-pointer"
           >
             {loading ? 'Authenticating...' : 'Sign in as Admin'}
           </button>
         </form>
-
-        <div className="pt-2 border-t border-stone-100">
-          <button
-            type="button"
-            onClick={handleDemoAdminLogin}
-            className="w-full py-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 font-semibold text-xs hover:bg-rose-100 transition"
-          >
-            ⚡ Instant Demo Admin Login (Click to bypass login)
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -18,15 +18,35 @@ const allowedOrigins = Array.from(
     ].filter(Boolean))
 );
 
+// Support Private Network Access (PNA) for IDE webviews and browser extensions like LiteClient
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    if (req.method === 'OPTIONS') {
+        const origin = req.headers.origin;
+        if (config.nodeEnv !== 'production' || allowedOrigins.includes(origin) || !origin) {
+            res.setHeader('Access-Control-Allow-Origin', origin || '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Private-Network');
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
+            return res.sendStatus(204);
+        }
+    }
+    next();
+});
+
 const corsOptions = {
     origin: (origin, callback) => {
         // Allow requests with no origin (e.g. mobile apps, curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
 
+        // In development mode, allow ALL origins (e.g. LiteClient webview, IDE extensions, Postman web, etc.)
+        if (config.nodeEnv !== 'production') {
+            return callback(null, true);
+        }
+
         const isExplicitlyAllowed = allowedOrigins.includes(origin);
         const isWildcardAllowed = allowedOrigins.includes('*');
-        // In local development, also allow any localhost port
-        const isLocalDev = config.nodeEnv !== 'production' && /^https?:\/\/localhost(:\d+)?$/.test(origin);
+        const isLocalDev = /^https?:\/\/localhost(:\d+)?$/.test(origin);
 
         if (isExplicitlyAllowed || isWildcardAllowed || isLocalDev) {
             return callback(null, true);
@@ -37,8 +57,8 @@ const corsOptions = {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['Set-Cookie'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Request-Private-Network'],
+    exposedHeaders: ['Set-Cookie', 'Access-Control-Allow-Private-Network'],
     maxAge: 86400, // 24 hours
 };
 
@@ -76,9 +96,9 @@ app.use("/api", apiRoutes);
 // Global Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`CORS enabled for origins: ${allowedOrigins.join(', ')}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running on http://localhost:${PORT} and http://127.0.0.1:${PORT}`);
+    console.log(`CORS enabled for origins: ${allowedOrigins.join(', ')} (and all origins in development mode)`);
 });
 
 export default app;

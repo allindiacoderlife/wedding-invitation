@@ -22,144 +22,24 @@ export const OrdersPage = () => {
   }, []);
 
   const fetchOrders = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('wedding_admin_token');
       const res = await fetch(`${API_BASE_URL}/api/orders/admin`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
-      if (data.success && data.orders?.length > 0) {
+      if (data.success && Array.isArray(data.orders)) {
         setOrders(data.orders);
-        return;
+      } else {
+        setOrders([]);
       }
-    } catch {
-      // fallback
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+      setOrders([]);
+    } finally {
+      setLoading(false);
     }
-
-    // Default rich sample orders
-    setOrders([
-      {
-        id: 'ord-101',
-        orderNumber: 'WED-89412',
-        clientName: 'Pooja Sharma',
-        clientEmail: 'pooja.s@example.com',
-        clientPhone: '+91 98765 43210',
-        brideName: 'Pooja',
-        groomName: 'Rohan',
-        brideParents: 'Mr. Rajesh & Mrs. Sunita Sharma',
-        groomParents: 'Mr. Anil & Mrs. Meenakshi Verma',
-        status: 'PENDING',
-        musicPreference: 'Kesariya (Instrumental Flute)',
-        customTextNotes: 'Please use royal gold font with hashtag #RohAnKiPooja',
-        finalVideoUrl: '',
-        adminNotes: '',
-        createdAt: new Date().toISOString(),
-        events: [
-          {
-            pageNumber: 1,
-            name: 'Haldi & Chooda Ceremony',
-            date: 'Friday, November 20, 2026',
-            time: '10:00 AM onwards',
-            venue: 'Sharma Villa Courtyard',
-            address: 'Civil Lines, Jaipur, Rajasthan',
-          },
-          {
-            pageNumber: 2,
-            name: 'Mehendi & Musical Sangeet',
-            date: 'Friday, November 20, 2026',
-            time: '06:30 PM onwards',
-            venue: 'The Grand Heritage Ballroom',
-            address: 'Station Road, Jaipur',
-          },
-          {
-            pageNumber: 3,
-            name: 'Shubh Vivah (Wedding Muhurtham)',
-            date: 'Saturday, November 21, 2026',
-            time: '11:15 AM Auspicious Hour',
-            venue: 'Palace Mandap Lawn',
-            address: 'Amer Road, Jaipur',
-          },
-          {
-            pageNumber: 4,
-            name: 'Grand Reception Dinner',
-            date: 'Saturday, November 21, 2026',
-            time: '08:00 PM onwards',
-            venue: 'Palace Royal Banquet Hall',
-            address: 'Amer Road, Jaipur',
-          },
-        ],
-      },
-      {
-        id: 'ord-102',
-        orderNumber: 'WED-89405',
-        clientName: 'Alexander Vance',
-        clientEmail: 'alex@example.com',
-        clientPhone: '+1 555-234-5678',
-        brideName: 'Sophia',
-        groomName: 'Alexander',
-        brideParents: 'David & Catherine Miller',
-        groomParents: 'Arthur & Beatrice Vance',
-        status: 'IN_PROGRESS',
-        musicPreference: 'Canon in D Major (Acoustic Guitar)',
-        customTextNotes: 'Santorini cliffside illustration style',
-        finalVideoUrl: '',
-        adminNotes: 'Currently rendering in After Effects at 1080x1920 portrait format.',
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-        events: [
-          {
-            pageNumber: 1,
-            name: 'Church Ceremony',
-            date: 'Saturday, October 24, 2026',
-            time: '04:30 PM',
-            venue: 'Holy Chapel of St. Sophia',
-            address: 'Oia Cliffs, Santorini, Greece',
-          },
-          {
-            pageNumber: 2,
-            name: 'Dinner Reception & Dancing',
-            date: 'Saturday, October 24, 2026',
-            time: '07:30 PM onwards',
-            venue: 'Grand Botanical Pavilion',
-            address: 'Fira Coast, Santorini, Greece',
-          },
-        ],
-      },
-      {
-        id: 'ord-103',
-        orderNumber: 'WED-89390',
-        clientName: 'Kavita Patel',
-        clientEmail: 'kavita@example.com',
-        clientPhone: '+91 99887 76655',
-        brideName: 'Kavita',
-        groomName: 'Dev',
-        brideParents: 'Smt. & Shri Ramesh Patel',
-        groomParents: 'Smt. & Shri Suresh Shah',
-        status: 'COMPLETED',
-        musicPreference: 'Kudmayi (Wedding Film Version)',
-        customTextNotes: 'Delivered draft via WhatsApp, approved by couple.',
-        finalVideoUrl: 'https://drive.google.com/file/d/1demo-wedding-invite-rendered-file/view',
-        adminNotes: 'Rendered at 60fps with customized family names.',
-        createdAt: new Date(Date.now() - 259200000).toISOString(),
-        events: [
-          {
-            pageNumber: 1,
-            name: 'Lagna Patrika & Haldi',
-            date: 'December 5, 2026',
-            time: '09:00 AM',
-            venue: 'Patel Niwas',
-            address: 'Ahmedabad, Gujarat',
-          },
-          {
-            pageNumber: 2,
-            name: 'Wedding & Dinner',
-            date: 'December 6, 2026',
-            time: '06:00 PM',
-            venue: 'YMCA Club Banquet',
-            address: 'SG Highway, Ahmedabad',
-          },
-        ],
-      },
-    ]);
   };
 
   const handleOpenOrder = (ord) => {
@@ -277,45 +157,68 @@ export const OrdersPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
-                {filteredOrders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-stone-50/60 transition">
-                    <td className="py-3 px-4 font-mono font-bold text-stone-900">{ord.orderNumber}</td>
-                    <td className="py-3 px-4">
-                      <p className="font-semibold text-stone-800">
-                        {ord.brideName} & {ord.groomName}
-                      </p>
-                      <p className="text-[10px] text-stone-400">{ord.clientName}</p>
-                    </td>
-                    <td className="py-3 px-4 text-stone-600 font-medium">
-                      {ord.events?.length || 0} Pages
-                    </td>
-                    <td className="py-3 px-4 text-stone-500 max-w-[150px] truncate">
-                      {ord.musicPreference || 'Default'}
-                    </td>
-                    <td className="py-3 px-4">
-                      {getStatusBadge(ord.status)}
-                    </td>
-                    <td className="py-3 px-4">
-                      {ord.finalVideoUrl ? (
-                        <a
-                          href={ord.finalVideoUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-emerald-700 font-semibold hover:underline inline-flex items-center gap-1"
-                        >
-                          <span>Video Attached</span> ↗
-                        </a>
-                      ) : (
-                        <span className="text-stone-400 italic">Not attached yet</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <Button variant="primary" size="sm" onClick={() => handleOpenOrder(ord)}>
-                        Process Order ⚙️
-                      </Button>
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-stone-500">
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <span className="text-xl animate-spin">⏳</span>
+                        <p className="text-xs font-semibold text-stone-600">Loading orders...</p>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                ) : filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-16 text-center text-stone-500">
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <span className="text-3xl">💌</span>
+                        <p className="font-semibold text-stone-700 text-sm">No Client Video Orders Yet</p>
+                        <p className="text-stone-400 text-xs max-w-sm">
+                          When couples fill out the invitation form on the website, their submissions will appear here for you to customize and render.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredOrders.map((ord) => (
+                    <tr key={ord.id} className="hover:bg-stone-50/60 transition">
+                      <td className="py-3 px-4 font-mono font-bold text-stone-900">{ord.orderNumber}</td>
+                      <td className="py-3 px-4">
+                        <p className="font-semibold text-stone-800">
+                          {ord.brideName} & {ord.groomName}
+                        </p>
+                        <p className="text-[10px] text-stone-400">{ord.clientName}</p>
+                      </td>
+                      <td className="py-3 px-4 text-stone-600 font-medium">
+                        {ord.events?.length || 0} Pages
+                      </td>
+                      <td className="py-3 px-4 text-stone-500 max-w-[150px] truncate">
+                        {ord.musicPreference || 'Default'}
+                      </td>
+                      <td className="py-3 px-4">
+                        {getStatusBadge(ord.status)}
+                      </td>
+                      <td className="py-3 px-4">
+                        {ord.finalVideoUrl ? (
+                          <a
+                            href={ord.finalVideoUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-emerald-700 font-semibold hover:underline inline-flex items-center gap-1"
+                          >
+                            <span>Video Attached</span> ↗
+                          </a>
+                        ) : (
+                          <span className="text-stone-400 italic">Not attached yet</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <Button variant="primary" size="sm" onClick={() => handleOpenOrder(ord)}>
+                          Process Order ⚙️
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
