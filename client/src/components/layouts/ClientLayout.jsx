@@ -18,18 +18,18 @@ export const ClientLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5]">
       {/* Floating Glassmorphic Header */}
-      <header className="sticky top-0 z-50 bg-[#FAF8F5]/80 backdrop-blur-md border-b border-stone-200/60 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-stone-200/60 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <span className="w-9 h-9 rounded-full bg-rose-700/10 border border-rose-700/20 text-rose-800 font-serif font-bold flex items-center justify-center text-lg shadow-xs group-hover:scale-105 transition-transform">
+          <Link to="/" className="flex items-center gap-2 group">
+            <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-rose-700/10 border border-rose-700/20 text-rose-800 font-serif font-bold flex items-center justify-center text-base sm:text-lg shadow-xs group-hover:scale-105 transition-transform">
               M
             </span>
             <div className="flex flex-col">
-              <span className="font-serif text-2xl font-semibold tracking-wider text-stone-900 leading-none">
+              <span className="font-serif text-xl sm:text-2xl font-semibold tracking-wider text-stone-900 leading-none">
                 MARRIED<span className="text-rose-700 font-bold">.</span>
               </span>
-              <span className="text-[9px] uppercase tracking-widest text-stone-400 font-medium mt-0.5">
+              <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-stone-400 font-medium mt-0.5">
                 Digital Wedding Invitations
               </span>
             </div>
