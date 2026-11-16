@@ -278,6 +278,39 @@ export const OrdersPage = () => {
               </div>
             </div>
 
+            {/* Template Dynamic Custom Attributes (if any) */}
+            {selectedOrder.customFields && Object.keys(selectedOrder.customFields).length > 0 && (
+              <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2">
+                <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">
+                  ✨ Custom Template Attributes & Details
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {Object.entries(selectedOrder.customFields).map(([k, v]) => (
+                    <div key={k} className="bg-white p-2.5 rounded-lg border border-amber-200/60 shadow-2xs">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wide">
+                          {k.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                        </span>
+                        {v && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(String(v));
+                              alert(`Copied "${v}"!`);
+                            }}
+                            className="text-[9px] text-amber-800 font-semibold hover:underline"
+                          >
+                            Copy
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-xs font-medium text-stone-900">{v || <span className="text-stone-400 italic">None provided</span>}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Page-by-Page Functions Section */}
             <div className="space-y-3">
               <h4 className="font-bold text-stone-900 text-xs uppercase tracking-wider flex items-center justify-between">

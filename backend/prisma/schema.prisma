@@ -71,6 +71,7 @@ model Template {
   category     String            @default("Traditional")
   price        Float             @default(0)
   duration     String?
+  formSchema   Json?
   isActive     Boolean           @default(true)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
@@ -108,6 +109,7 @@ model InvitationOrder {
   // Custom Preferences
   musicPreference  String?
   customTextNotes  String?
+  customFields     Json?
   photoUrls        Json?
 
   // Admin Fulfillment Details

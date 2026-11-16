@@ -35,11 +35,14 @@ export const CreateInvitationPage = () => {
     brideParents: '',
     groomParents: '',
 
+    // Dynamic Custom Template Attributes
+    customFields: {},
+
     // Functions Page-by-Page
     events: [
       {
         pageNumber: 1,
-        name: 'Mehendi & Sangeet',
+        name: 'Haldi & Chooda Ceremony',
         date: '',
         time: '',
         venue: '',
@@ -47,7 +50,7 @@ export const CreateInvitationPage = () => {
       },
       {
         pageNumber: 2,
-        name: 'Wedding Ceremony (Muhurtham)',
+        name: 'Shubh Vivah (Wedding Muhurtham)',
         date: '',
         time: '',
         venue: '',
@@ -55,7 +58,7 @@ export const CreateInvitationPage = () => {
       },
       {
         pageNumber: 3,
-        name: 'Reception Dinner',
+        name: 'Grand Reception Dinner',
         date: '',
         time: '',
         venue: '',
@@ -74,6 +77,26 @@ export const CreateInvitationPage = () => {
     fetchTemplates();
   }, []);
 
+  const handleSelectTemplate = (tpl) => {
+    setSelectedTemplate(tpl);
+
+    // If template has defined slides in formSchema, initialize function slides to match
+    if (tpl.formSchema?.slides?.length > 0) {
+      const templateEvents = tpl.formSchema.slides.map((s, idx) => ({
+        pageNumber: idx + 1,
+        name: s.name || `Function ${idx + 1}`,
+        date: '',
+        time: '',
+        venue: '',
+        address: '',
+      }));
+      setFormData((prev) => ({
+        ...prev,
+        events: templateEvents,
+      }));
+    }
+  };
+
   const fetchTemplates = async () => {
     setLoading(true);
     try {
@@ -81,7 +104,7 @@ export const CreateInvitationPage = () => {
       const data = await res.json();
       if (data.success && Array.isArray(data.templates) && data.templates.length > 0) {
         setTemplates(data.templates);
-        setSelectedTemplate(data.templates[0]);
+        handleSelectTemplate(data.templates[0]);
       } else {
         setTemplates([]);
         setSelectedTemplate(null);
@@ -97,6 +120,16 @@ export const CreateInvitationPage = () => {
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleCustomFieldChange = (key, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      customFields: {
+        ...(prev.customFields || {}),
+        [key]: value,
+      },
+    }));
   };
 
   const handleEventChange = (index, field, value) => {
@@ -211,7 +244,7 @@ export const CreateInvitationPage = () => {
               {templates.map((tpl) => (
                 <div
                   key={tpl.id}
-                  onClick={() => setSelectedTemplate(tpl)}
+                  onClick={() => handleSelectTemplate(tpl)}
                   className={`cursor-pointer rounded-2xl overflow-hidden border transition bg-white shadow-2xs flex flex-col justify-between ${
                     selectedTemplate?.id === tpl.id
                       ? 'border-rose-700 ring-2 ring-rose-300 shadow-md scale-[1.02]'
@@ -225,11 +258,20 @@ export const CreateInvitationPage = () => {
                         <img
                           src={getDirectImageUrl(tpl.thumbnailUrl)}
                           alt={tpl.title}
+                          referrerPolicy="no-referrer"
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const match = tpl.thumbnailUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+                            if (match && match[1] && !e.currentTarget.dataset.triedFallback) {
+                              e.currentTarget.dataset.triedFallback = 'true';
+                              e.currentTarget.src = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+                            }
+                          }}
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-stone-950 text-stone-600">
-                          <span className="text-3xl">📱</span>
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-stone-900 via-stone-950 to-stone-900 text-stone-400 p-4 text-center">
+                          <span className="text-4xl mb-2">🎬</span>
+                          <span className="text-[11px] font-medium text-stone-300">Vertical Short Video</span>
                         </div>
                       )}
                       <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur-xs">
@@ -357,6 +399,32 @@ export const CreateInvitationPage = () => {
                 />
               </div>
             </div>
+
+            {/* Dynamic Template-Specific Custom Attributes */}
+            {selectedTemplate?.formSchema?.attributes && selectedTemplate.formSchema.attributes.length > 0 && (
+              <div className="pt-4 border-t border-stone-100 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-rose-800 uppercase tracking-widest flex items-center gap-1.5">
+                    ✨ Template Details & Custom Attributes
+                  </span>
+                  <span className="text-[10px] text-stone-400">Customized for {selectedTemplate.title}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {selectedTemplate.formSchema.attributes.map((attr, idx) => (
+                    <div key={idx} className={selectedTemplate.formSchema.attributes.length === 1 ? 'sm:col-span-2' : ''}>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">{attr.label}</label>
+                      <input
+                        type="text"
+                        value={formData.customFields?.[attr.key] || ''}
+                        onChange={(e) => handleCustomFieldChange(attr.key, e.target.value)}
+                        placeholder={attr.placeholder || `Enter ${attr.label.toLowerCase()}`}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-rose-600 bg-stone-50/50"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-between pt-4 border-t border-stone-100">
               <button

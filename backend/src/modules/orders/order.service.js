@@ -51,6 +51,7 @@ export const createOrder = async (orderData, userId = null) => {
             events: events,
             musicPreference: musicPreference || '',
             customTextNotes: customTextNotes || '',
+            customFields: orderData.customFields || {},
             photoUrls: photoUrls || [],
             status: 'PENDING',
         },

@@ -45,6 +45,7 @@ export const createTemplate = async (data) => {
             category: data.category || 'Traditional',
             duration: data.duration || '60s',
             price: data.price ? parseFloat(data.price) : 0,
+            formSchema: data.formSchema !== undefined ? data.formSchema : null,
             isActive: true,
         },
     });
@@ -66,6 +67,7 @@ export const updateTemplate = async (id, data) => {
             category: data.category !== undefined ? data.category : existing.category,
             duration: data.duration !== undefined ? data.duration : existing.duration,
             price: data.price !== undefined ? parseFloat(data.price) : existing.price,
+            formSchema: data.formSchema !== undefined ? data.formSchema : existing.formSchema,
             isActive: data.isActive !== undefined ? Boolean(data.isActive) : existing.isActive,
         },
     });

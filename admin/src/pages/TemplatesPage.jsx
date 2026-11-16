@@ -16,6 +16,65 @@ export const getDirectImageUrl = (url) => {
   return url;
 };
 
+export const TEMPLATE_PRESETS = [
+  {
+    id: 'standard_3_page',
+    name: '🌟 Standard 3-Page (Haldi, Muhurtham, Reception)',
+    slides: [
+      { pageNumber: 1, name: 'Haldi & Chooda Ceremony' },
+      { pageNumber: 2, name: 'Shubh Vivah (Wedding Muhurtham)' },
+      { pageNumber: 3, name: 'Grand Reception Dinner' },
+    ],
+    attributes: [
+      { key: 'weddingHashtag', label: 'Wedding Hashtag', placeholder: 'e.g. #RohAnKiPooja' },
+    ],
+  },
+  {
+    id: 'royal_4_page',
+    name: '👑 Royal 4-Page Heritage (Haldi, Sangeet, Muhurtham, Reception)',
+    slides: [
+      { pageNumber: 1, name: 'Ganesh Vandana & Haldi' },
+      { pageNumber: 2, name: 'Mehendi & Musical Sangeet' },
+      { pageNumber: 3, name: 'Auspicious Vivah Muhurtham' },
+      { pageNumber: 4, name: 'Royal Reception Gala' },
+    ],
+    attributes: [
+      { key: 'weddingHashtag', label: 'Wedding Hashtag', placeholder: 'e.g. #RohAnKiPooja' },
+      { key: 'grandparentsBlessings', label: 'Family & Grandparents Blessings', placeholder: 'e.g. With blessings of Late Shri...' },
+    ],
+  },
+  {
+    id: 'modern_2_page',
+    name: '🌸 Modern Minimalist 2-Page (Ceremony & Reception)',
+    slides: [
+      { pageNumber: 1, name: 'Wedding Ceremony' },
+      { pageNumber: 2, name: 'Dinner & Celebration' },
+    ],
+    attributes: [
+      { key: 'dressCode', label: 'Dress Code / Attire Theme', placeholder: 'e.g. Black Tie or Pastel Traditional' },
+      { key: 'rsvpContact', label: 'RSVP Contact Phone / Email', placeholder: 'e.g. +91 98765 43210 (Sister)' },
+    ],
+  },
+  {
+    id: 'custom',
+    name: '⚙️ Custom Dynamic Pages & Attributes',
+    slides: [],
+    attributes: [],
+  },
+];
+
+const DEFAULT_FORM_SCHEMA = {
+  preset: 'standard_3_page',
+  slides: [
+    { pageNumber: 1, name: 'Haldi & Chooda Ceremony' },
+    { pageNumber: 2, name: 'Shubh Vivah (Wedding Muhurtham)' },
+    { pageNumber: 3, name: 'Grand Reception Dinner' },
+  ],
+  attributes: [
+    { key: 'weddingHashtag', label: 'Wedding Hashtag', placeholder: 'e.g. #RohAnKiPooja' },
+  ],
+};
+
 export const TemplatesPage = () => {
   const [templates, setTemplates] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,6 +89,7 @@ export const TemplatesPage = () => {
     category: 'Traditional',
     duration: '30s',
     price: '49',
+    formSchema: DEFAULT_FORM_SCHEMA,
   });
 
   const [activePreviewVideo, setActivePreviewVideo] = useState(null);
@@ -61,6 +121,115 @@ export const TemplatesPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handlePresetChange = (presetId) => {
+    const selected = TEMPLATE_PRESETS.find((p) => p.id === presetId);
+    if (!selected) return;
+
+    if (presetId === 'custom') {
+      setForm((prev) => ({
+        ...prev,
+        formSchema: {
+          preset: 'custom',
+          slides: prev.formSchema?.slides?.length ? prev.formSchema.slides : [
+            { pageNumber: 1, name: 'Function 1' },
+            { pageNumber: 2, name: 'Function 2' },
+          ],
+          attributes: prev.formSchema?.attributes || [],
+        },
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        formSchema: {
+          preset: selected.id,
+          slides: [...selected.slides],
+          attributes: [...selected.attributes],
+        },
+      }));
+    }
+  };
+
+  const handleAddSlide = () => {
+    const currentSlides = form.formSchema?.slides || [];
+    const newSlide = {
+      pageNumber: currentSlides.length + 1,
+      name: `Slide ${currentSlides.length + 1}: Event`,
+    };
+    setForm((prev) => ({
+      ...prev,
+      formSchema: {
+        ...prev.formSchema,
+        slides: [...currentSlides, newSlide],
+      },
+    }));
+  };
+
+  const handleUpdateSlideName = (index, newName) => {
+    const updated = [...(form.formSchema?.slides || [])];
+    updated[index] = { ...updated[index], name: newName };
+    setForm((prev) => ({
+      ...prev,
+      formSchema: {
+        ...prev.formSchema,
+        slides: updated,
+      },
+    }));
+  };
+
+  const handleRemoveSlide = (index) => {
+    const updated = form.formSchema?.slides?.filter((_, i) => i !== index) || [];
+    const renumbered = updated.map((s, idx) => ({ ...s, pageNumber: idx + 1 }));
+    setForm((prev) => ({
+      ...prev,
+      formSchema: {
+        ...prev.formSchema,
+        slides: renumbered,
+      },
+    }));
+  };
+
+  const handleAddAttribute = () => {
+    const currentAttrs = form.formSchema?.attributes || [];
+    const newAttr = {
+      key: `custom_${Date.now()}`,
+      label: 'New Custom Attribute',
+      placeholder: 'e.g. Value...',
+    };
+    setForm((prev) => ({
+      ...prev,
+      formSchema: {
+        ...prev.formSchema,
+        attributes: [...currentAttrs, newAttr],
+      },
+    }));
+  };
+
+  const handleUpdateAttribute = (index, field, value) => {
+    const updated = [...(form.formSchema?.attributes || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    if (field === 'label' && !updated[index].customKeySet) {
+      updated[index].key = value.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    }
+    setForm((prev) => ({
+      ...prev,
+      formSchema: {
+        ...prev.formSchema,
+        attributes: updated,
+      },
+    }));
+  };
+
+  const handleRemoveAttribute = (index) => {
+    const updated = form.formSchema?.attributes?.filter((_, i) => i !== index) || [];
+    setForm((prev) => ({
+      ...prev,
+      formSchema: {
+        ...prev.formSchema,
+        attributes: updated,
+      },
+    }));
+  };
+
   const handleOpenCreate = () => {
     setEditingTemplate(null);
     setForm({
@@ -71,6 +240,7 @@ export const TemplatesPage = () => {
       category: 'Traditional',
       duration: '30s',
       price: '49',
+      formSchema: DEFAULT_FORM_SCHEMA,
     });
     setIsModalOpen(true);
   };
@@ -85,6 +255,7 @@ export const TemplatesPage = () => {
       category: tpl.category || 'Traditional',
       duration: tpl.duration || '30s',
       price: tpl.price !== undefined ? String(tpl.price) : '49',
+      formSchema: tpl.formSchema || DEFAULT_FORM_SCHEMA,
     });
     setIsModalOpen(true);
   };
@@ -207,11 +378,21 @@ export const TemplatesPage = () => {
                     <img
                       src={getDirectImageUrl(tpl.thumbnailUrl)}
                       alt={tpl.title}
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      onError={(e) => {
+                        const match = tpl.thumbnailUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+                        if (match && match[1] && !e.currentTarget.dataset.triedFallback) {
+                          e.currentTarget.dataset.triedFallback = 'true';
+                          e.currentTarget.src = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+                        }
+                      }}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-stone-950 text-stone-600">
-                      <span className="text-3xl">📱</span>
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-stone-900 via-stone-950 to-stone-900 text-stone-400 p-4 text-center">
+                      <span className="text-4xl mb-2">🎬</span>
+                      <span className="text-[11px] font-medium text-stone-300">Vertical Short Video</span>
+                      <span className="text-[9px] text-stone-500 mt-1">Click Preview to Play</span>
                     </div>
                   )}
 
@@ -242,7 +423,17 @@ export const TemplatesPage = () => {
                     <CardTitle className="text-sm font-bold truncate">{tpl.title}</CardTitle>
                     <span className="text-xs font-extrabold text-stone-900">${tpl.price}</span>
                   </div>
-                  <CardDescription className="line-clamp-2 text-[11px] mt-1">
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[10px] font-semibold">
+                      📄 {tpl.formSchema?.slides?.length || 3} Slides
+                    </span>
+                    {tpl.formSchema?.attributes?.length > 0 && (
+                      <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-semibold">
+                        ✨ {tpl.formSchema.attributes.length} Custom Fields
+                      </span>
+                    )}
+                  </div>
+                  <CardDescription className="line-clamp-2 text-[11px] mt-1.5">
                     {tpl.description || 'Customizable page-by-page wedding invitation video.'}
                   </CardDescription>
                 </CardHeader>
@@ -281,19 +472,19 @@ export const TemplatesPage = () => {
       )}
 
       {/* Add / Edit Template Dialog (Shadcn style) */}
-      <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="max-w-lg">
+      <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {editingTemplate ? 'Edit Wedding Video Template' : 'Add New Wedding Video Template'}
           </DialogTitle>
           <DialogDescription>
             {editingTemplate
-              ? 'Update vertical short video details, pricing, and video link.'
-              : 'Enter vertical (9:16) short video details that couples can view and choose from.'}
+              ? 'Update vertical short video details, pricing, slide pages, and dynamic form attributes.'
+              : 'Enter vertical (9:16) short video details, slide pages, and dynamic form attributes.'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmitTemplate} className="space-y-4">
+        <form onSubmit={handleSubmitTemplate} className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1">Template Title *</label>
             <Input
@@ -328,7 +519,7 @@ export const TemplatesPage = () => {
               placeholder="https://... Google Drive image link or direct photo URL"
             />
             <span className="text-[10px] text-stone-400 mt-0.5 block">
-              💡 Google Drive links (e.g. drive.google.com/file/d/.../view) are automatically converted into direct images. Make sure file sharing is set to "Anyone with the link".
+              💡 Google Drive links (e.g. drive.google.com/file/d/.../view) are automatically converted into direct images.
             </span>
             {form.thumbnailUrl && (
               <div className="mt-2 flex items-center gap-2">
@@ -336,9 +527,14 @@ export const TemplatesPage = () => {
                 <img
                   src={getDirectImageUrl(form.thumbnailUrl)}
                   alt="Thumbnail Preview"
+                  referrerPolicy="no-referrer"
                   className="w-10 h-16 object-cover rounded-md border border-stone-200"
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
+                    const match = form.thumbnailUrl.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+                    if (match && match[1] && !e.currentTarget.dataset.triedFallback) {
+                      e.currentTarget.dataset.triedFallback = 'true';
+                      e.currentTarget.src = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+                    }
                   }}
                 />
               </div>
@@ -380,17 +576,142 @@ export const TemplatesPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">Description & Page Breakdown</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">Description & Notes</label>
             <Textarea
               name="description"
               value={form.description}
               onChange={handleInputChange}
-              rows={3}
-              placeholder="e.g. Page 1: Ganesh Vandana & Bride/Groom, Page 2: Haldi, Page 3: Wedding Muhurtham, Page 4: Reception."
+              rows={2}
+              placeholder="e.g. Royal aesthetic short video invitation for luxury weddings."
             />
           </div>
 
-          <DialogFooter>
+          {/* Dynamic Form Structure & Slide Pages Builder */}
+          <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/90 space-y-4">
+            <div>
+              <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <span>📐</span>
+                <span>Dynamic Form & Slide Pages Builder</span>
+              </h4>
+              <p className="text-[11px] text-stone-500">
+                Configure the exact function slides and extra attributes for this template.
+              </p>
+            </div>
+
+            {/* Preset Selector */}
+            <div>
+              <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                Apply Predefined Form Preset
+              </label>
+              <Select
+                value={form.formSchema?.preset || 'standard_3_page'}
+                onChange={(e) => handlePresetChange(e.target.value)}
+                className="bg-white text-xs"
+              >
+                {TEMPLATE_PRESETS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            {/* Slide Pages Manager */}
+            <div className="space-y-2 pt-2 border-t border-stone-200">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-stone-800">
+                  Function Slides ({form.formSchema?.slides?.length || 0})
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddSlide}
+                  className="h-6 text-[10px] px-2 bg-white"
+                >
+                  + Add Slide Page
+                </Button>
+              </div>
+
+              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                {form.formSchema?.slides?.map((slide, sIdx) => (
+                  <div key={sIdx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-stone-200 text-xs">
+                    <span className="w-5 h-5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px] flex items-center justify-center shrink-0">
+                      {slide.pageNumber}
+                    </span>
+                    <input
+                      type="text"
+                      value={slide.name}
+                      onChange={(e) => handleUpdateSlideName(sIdx, e.target.value)}
+                      placeholder="e.g. Haldi & Chooda"
+                      className="flex-1 px-2.5 py-1 text-xs border border-stone-200 rounded-lg focus:outline-rose-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSlide(sIdx)}
+                      className="text-stone-400 hover:text-red-600 p-1 text-sm font-bold"
+                      title="Remove Slide"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Attributes Manager */}
+            <div className="space-y-2 pt-2 border-t border-stone-200">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-stone-800">
+                  Custom Template Attributes ({form.formSchema?.attributes?.length || 0})
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddAttribute}
+                  className="h-6 text-[10px] px-2 bg-white"
+                >
+                  + Add Custom Field
+                </Button>
+              </div>
+
+              <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                {form.formSchema?.attributes?.length === 0 ? (
+                  <p className="text-[10px] text-stone-400 italic">No custom attributes added (only standard couple names & music).</p>
+                ) : (
+                  form.formSchema?.attributes?.map((attr, aIdx) => (
+                    <div key={aIdx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-stone-200 text-xs">
+                      <input
+                        type="text"
+                        value={attr.label}
+                        onChange={(e) => handleUpdateAttribute(aIdx, 'label', e.target.value)}
+                        placeholder="Field Label (e.g. Hashtag)"
+                        className="w-1/2 px-2.5 py-1 text-xs border border-stone-200 rounded-lg focus:outline-rose-600 font-semibold"
+                      />
+                      <input
+                        type="text"
+                        value={attr.placeholder || ''}
+                        onChange={(e) => handleUpdateAttribute(aIdx, 'placeholder', e.target.value)}
+                        placeholder="Placeholder helper"
+                        className="flex-1 px-2.5 py-1 text-xs border border-stone-200 rounded-lg focus:outline-rose-600 text-stone-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAttribute(aIdx)}
+                        className="text-stone-400 hover:text-red-600 p-1 text-sm font-bold"
+                        title="Remove Attribute"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="pt-2">
             <Button variant="outline" type="button" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
