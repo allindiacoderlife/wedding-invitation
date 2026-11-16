@@ -96,9 +96,12 @@ app.use("/api", apiRoutes);
 // Global Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running on http://localhost:${PORT} and http://127.0.0.1:${PORT}`);
-    console.log(`CORS enabled for origins: ${allowedOrigins.join(', ')} (and all origins in development mode)`);
-});
+// Only start standalone HTTP server in non-serverless environments (local development)
+if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running on http://localhost:${PORT} and http://127.0.0.1:${PORT}`);
+        console.log(`CORS enabled for origins: ${allowedOrigins.join(', ')} (and all origins in development mode)`);
+    });
+}
 
 export default app;

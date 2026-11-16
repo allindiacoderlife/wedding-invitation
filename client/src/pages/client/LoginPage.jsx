@@ -28,13 +28,19 @@ export const LoginPage = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        // Safe fallback in case of HTML error response
+      }
+
       if (!res.ok) {
         if (data.details?.isVerified === false || data.message?.includes('not verified')) {
           navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
           return;
         }
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || `Server error (${res.status}): Please check backend service.`);
       }
 
       login(data.user, data.token);

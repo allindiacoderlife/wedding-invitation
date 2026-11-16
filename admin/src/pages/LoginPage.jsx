@@ -24,8 +24,16 @@ export const LoginPage = () => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        // In case of non-JSON response from server (e.g. 404/502 HTML)
+      }
+
+      if (!res.ok) {
+        throw new Error(data.message || `Server error (${res.status}): Please check backend deployment.`);
+      }
 
       if (data.user?.role !== 'ADMIN') {
         throw new Error('Access denied: Admin credentials required.');
