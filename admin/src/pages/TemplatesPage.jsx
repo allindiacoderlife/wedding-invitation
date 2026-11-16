@@ -7,9 +7,19 @@ import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } fr
 import { VideoPlayer } from '../components/ui/VideoPlayer';
 import { API_BASE_URL } from '../config/api';
 
+export const getDirectImageUrl = (url) => {
+  if (!url) return '';
+  const gDriveMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+  if (gDriveMatch && gDriveMatch[1]) {
+    return `https://lh3.googleusercontent.com/d/${gDriveMatch[1]}`;
+  }
+  return url;
+};
+
 export const TemplatesPage = () => {
   const [templates, setTemplates] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
@@ -18,13 +28,13 @@ export const TemplatesPage = () => {
     videoUrl: '',
     thumbnailUrl: '',
     category: 'Traditional',
-    duration: '60s',
+    duration: '30s',
     price: '49',
   });
 
   const [activePreviewVideo, setActivePreviewVideo] = useState(null);
 
-  // Initial fetch with demo fallback
+  // Initial fetch
   useEffect(() => {
     fetchTemplates();
   }, []);
@@ -51,14 +61,48 @@ export const TemplatesPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleCreateTemplate = async (e) => {
+  const handleOpenCreate = () => {
+    setEditingTemplate(null);
+    setForm({
+      title: '',
+      description: '',
+      videoUrl: '',
+      thumbnailUrl: '',
+      category: 'Traditional',
+      duration: '30s',
+      price: '49',
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (tpl) => {
+    setEditingTemplate(tpl);
+    setForm({
+      title: tpl.title || '',
+      description: tpl.description || '',
+      videoUrl: tpl.videoUrl || '',
+      thumbnailUrl: tpl.thumbnailUrl || '',
+      category: tpl.category || 'Traditional',
+      duration: tpl.duration || '30s',
+      price: tpl.price !== undefined ? String(tpl.price) : '49',
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitTemplate = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const token = localStorage.getItem('wedding_admin_token');
-      const res = await fetch(`${API_BASE_URL}/api/templates`, {
-        method: 'POST',
+      const isEdit = Boolean(editingTemplate);
+      const url = isEdit
+        ? `${API_BASE_URL}/api/templates/${editingTemplate.id}`
+        : `${API_BASE_URL}/api/templates`;
+      const method = isEdit ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -68,35 +112,36 @@ export const TemplatesPage = () => {
 
       const data = await res.json();
       if (data.success && data.template) {
-        setTemplates([data.template, ...templates]);
+        if (isEdit) {
+          setTemplates((prev) =>
+            prev.map((t) => (t.id === editingTemplate.id ? data.template : t))
+          );
+        } else {
+          setTemplates((prev) => [data.template, ...prev]);
+        }
       } else {
-        // Local state addition
-        const newTemplate = {
-          id: `tpl-${Date.now()}`,
-          ...form,
-          price: parseFloat(form.price) || 0,
-        };
-        setTemplates([newTemplate, ...templates]);
+        if (isEdit) {
+          setTemplates((prev) =>
+            prev.map((t) =>
+              t.id === editingTemplate.id
+                ? { ...t, ...form, price: parseFloat(form.price) || 0 }
+                : t
+            )
+          );
+        } else {
+          const newTemplate = {
+            id: `tpl-${Date.now()}`,
+            ...form,
+            price: parseFloat(form.price) || 0,
+          };
+          setTemplates((prev) => [newTemplate, ...prev]);
+        }
       }
 
       setIsModalOpen(false);
-      setForm({
-        title: '',
-        description: '',
-        videoUrl: '',
-        thumbnailUrl: '',
-        category: 'Traditional',
-        duration: '60s',
-        price: '49',
-      });
-    } catch {
-      const newTemplate = {
-        id: `tpl-${Date.now()}`,
-        ...form,
-        price: parseFloat(form.price) || 0,
-      };
-      setTemplates([newTemplate, ...templates]);
-      setIsModalOpen(false);
+      setEditingTemplate(null);
+    } catch (err) {
+      console.error('Error saving template:', err);
     } finally {
       setLoading(false);
     }
@@ -117,17 +162,17 @@ export const TemplatesPage = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-6xl">
+    <div className="space-y-8 w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-stone-900">Video Invitation Templates</h1>
           <p className="text-xs text-stone-500 mt-1">
-            Upload and showcase wedding invitation video samples that clients can choose from.
+            Upload, edit, and showcase vertical (9:16) short video samples that clients can choose from.
           </p>
         </div>
 
-        <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
+        <Button variant="primary" size="sm" onClick={handleOpenCreate}>
           + Add New Video Template
         </Button>
       </div>
@@ -144,29 +189,29 @@ export const TemplatesPage = () => {
             <span className="text-4xl">🎬</span>
             <h3 className="font-bold text-stone-900 text-sm">No Video Templates Added Yet</h3>
             <p className="text-xs text-stone-500 leading-relaxed">
-              Upload your video preview links (Google Drive, MP4, or YouTube) so prospective couples can preview and choose a style for their wedding invitation.
+              Upload your vertical short video preview links (Google Drive, MP4, or YouTube Shorts) so couples can preview and choose a style for their wedding invitation.
             </p>
-            <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)} className="mt-2">
+            <Button variant="primary" size="sm" onClick={handleOpenCreate} className="mt-2">
               + Add First Video Template
             </Button>
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {templates.map((tpl) => (
             <Card key={tpl.id} className="overflow-hidden flex flex-col justify-between group hover:shadow-md transition">
               <div>
-                {/* Video Thumbnail or Live Video Container */}
-                <div className="relative aspect-video bg-stone-900 overflow-hidden">
+                {/* Vertical 9:16 Video Container */}
+                <div className="relative aspect-[9/16] bg-stone-900 overflow-hidden">
                   {tpl.thumbnailUrl ? (
                     <img
-                      src={tpl.thumbnailUrl}
+                      src={getDirectImageUrl(tpl.thumbnailUrl)}
                       alt={tpl.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-stone-950 text-stone-600">
-                      <span className="text-3xl">🎬</span>
+                      <span className="text-3xl">📱</span>
                     </div>
                   )}
 
@@ -184,8 +229,8 @@ export const TemplatesPage = () => {
                   <button
                     type="button"
                     onClick={() => setActivePreviewVideo(tpl.videoUrl)}
-                    className="absolute inset-0 m-auto w-11 h-11 rounded-full bg-white/90 text-stone-900 flex items-center justify-center shadow-lg hover:scale-110 transition text-sm font-bold cursor-pointer"
-                    title="Play Sample Video"
+                    className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-white/90 text-stone-900 flex items-center justify-center shadow-lg hover:scale-110 transition text-sm font-bold cursor-pointer"
+                    title="Play Short Video"
                   >
                     ▶
                   </button>
@@ -194,7 +239,7 @@ export const TemplatesPage = () => {
                 {/* Template Info */}
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="text-sm font-bold">{tpl.title}</CardTitle>
+                    <CardTitle className="text-sm font-bold truncate">{tpl.title}</CardTitle>
                     <span className="text-xs font-extrabold text-stone-900">${tpl.price}</span>
                   </div>
                   <CardDescription className="line-clamp-2 text-[11px] mt-1">
@@ -203,44 +248,52 @@ export const TemplatesPage = () => {
                 </CardHeader>
               </div>
 
-              <CardFooter className="p-4 pt-2 flex items-center justify-between border-t border-stone-100">
-                <span className="text-[10px] text-stone-400 font-mono">
-                  Source: {tpl.videoUrl ? 'Video linked' : 'No link'}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setActivePreviewVideo(tpl.videoUrl)}
-                    className="text-[11px] h-7 px-2.5"
-                  >
-                    Preview
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(tpl.id)}
-                    className="text-[11px] h-7 px-2.5 text-red-600 hover:bg-red-50"
-                  >
-                    Delete
-                  </Button>
-                </div>
+              <CardFooter className="p-4 pt-2 flex items-center justify-between border-t border-stone-100 gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActivePreviewVideo(tpl.videoUrl)}
+                  className="text-[11px] h-7 px-2.5 flex-1"
+                >
+                  Preview
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenEdit(tpl)}
+                  className="text-[11px] h-7 px-2.5 flex-1 text-stone-800 hover:bg-stone-100"
+                >
+                  Edit ✏️
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDelete(tpl.id)}
+                  className="text-[11px] h-7 px-2 text-red-600 hover:bg-red-50"
+                  title="Delete Template"
+                >
+                  🗑️
+                </Button>
               </CardFooter>
             </Card>
           ))}
         </div>
       )}
 
-      {/* Add New Template Dialog (Shadcn style) */}
+      {/* Add / Edit Template Dialog (Shadcn style) */}
       <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} maxWidth="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add New Wedding Video Template</DialogTitle>
+          <DialogTitle>
+            {editingTemplate ? 'Edit Wedding Video Template' : 'Add New Wedding Video Template'}
+          </DialogTitle>
           <DialogDescription>
-            Enter short video invitation details that clients can view and select on the frontpage.
+            {editingTemplate
+              ? 'Update vertical short video details, pricing, and video link.'
+              : 'Enter vertical (9:16) short video details that couples can view and choose from.'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleCreateTemplate} className="space-y-4">
+        <form onSubmit={handleSubmitTemplate} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1">Template Title *</label>
             <Input
@@ -253,27 +306,43 @@ export const TemplatesPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">Video Preview URL *</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">Vertical Video Preview URL *</label>
             <Input
               required
               name="videoUrl"
               value={form.videoUrl}
               onChange={handleInputChange}
-              placeholder="https://... MP4 link, YouTube, or Google Drive embed"
+              placeholder="https://... Google Drive, MP4, or YouTube Shorts link"
             />
             <span className="text-[10px] text-stone-400 mt-0.5 block">
-              Sample video showing animation, transitions, and timing.
+              Vertical (9:16) short video preview for WhatsApp and mobile viewing.
             </span>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">Cover Thumbnail Image URL</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">Cover Thumbnail Image URL (Vertical)</label>
             <Input
               name="thumbnailUrl"
               value={form.thumbnailUrl}
               onChange={handleInputChange}
-              placeholder="https://... cover photo / poster"
+              placeholder="https://... Google Drive image link or direct photo URL"
             />
+            <span className="text-[10px] text-stone-400 mt-0.5 block">
+              💡 Google Drive links (e.g. drive.google.com/file/d/.../view) are automatically converted into direct images. Make sure file sharing is set to "Anyone with the link".
+            </span>
+            {form.thumbnailUrl && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-[10px] font-semibold text-stone-500">Preview:</span>
+                <img
+                  src={getDirectImageUrl(form.thumbnailUrl)}
+                  alt="Thumbnail Preview"
+                  className="w-10 h-16 object-cover rounded-md border border-stone-200"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -294,7 +363,7 @@ export const TemplatesPage = () => {
                 name="duration"
                 value={form.duration}
                 onChange={handleInputChange}
-                placeholder="e.g. 60s"
+                placeholder="e.g. 30s, 60s"
               />
             </div>
 
@@ -326,20 +395,20 @@ export const TemplatesPage = () => {
               Cancel
             </Button>
             <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? 'Saving...' : 'Add Template'}
+              {loading ? 'Saving...' : editingTemplate ? 'Save Changes' : 'Add Template'}
             </Button>
           </DialogFooter>
         </form>
       </Dialog>
 
-      {/* Video Player Modal Preview */}
-      <Dialog open={Boolean(activePreviewVideo)} onClose={() => setActivePreviewVideo(null)} maxWidth="max-w-xl">
+      {/* Video Player Modal Preview (Vertical 9:16 Short Video) */}
+      <Dialog open={Boolean(activePreviewVideo)} onClose={() => setActivePreviewVideo(null)} maxWidth="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Video Template Preview</DialogTitle>
-          <DialogDescription>Sample preview as seen by prospective couples.</DialogDescription>
+          <DialogTitle>Vertical Short Video Preview</DialogTitle>
+          <DialogDescription>9:16 portrait video preview as seen on mobile & WhatsApp.</DialogDescription>
         </DialogHeader>
 
-        <div className="aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center">
+        <div className="aspect-[9/16] bg-black rounded-2xl overflow-hidden flex items-center justify-center shadow-inner">
           {activePreviewVideo && (
             <VideoPlayer url={activePreviewVideo} />
           )}

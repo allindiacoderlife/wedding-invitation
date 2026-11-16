@@ -3,6 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { VideoPlayer } from '../../components/common/VideoPlayer';
 import { API_BASE_URL } from '../../config/api';
 
+export const getDirectImageUrl = (url) => {
+  if (!url) return '';
+  const gDriveMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
+  if (gDriveMatch && gDriveMatch[1]) {
+    return `https://lh3.googleusercontent.com/d/${gDriveMatch[1]}`;
+  }
+  return url;
+};
+
 export const CreateInvitationPage = () => {
   const navigate = useNavigate();
 
@@ -198,7 +207,7 @@ export const CreateInvitationPage = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {templates.map((tpl) => (
                 <div
                   key={tpl.id}
@@ -210,12 +219,19 @@ export const CreateInvitationPage = () => {
                   }`}
                 >
                   <div>
-                    <div className="relative aspect-video bg-stone-900">
-                      <img
-                        src={tpl.thumbnailUrl}
-                        alt={tpl.title}
-                        className="w-full h-full object-cover"
-                      />
+                    {/* Vertical 9:16 Short Video Container */}
+                    <div className="relative aspect-[9/16] bg-stone-900 overflow-hidden">
+                      {tpl.thumbnailUrl ? (
+                        <img
+                          src={getDirectImageUrl(tpl.thumbnailUrl)}
+                          alt={tpl.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-stone-950 text-stone-600">
+                          <span className="text-3xl">📱</span>
+                        </div>
+                      )}
                       <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur-xs">
                         {tpl.category}
                       </div>
@@ -225,7 +241,7 @@ export const CreateInvitationPage = () => {
                           e.stopPropagation();
                           setActivePreviewVideo(tpl.videoUrl);
                         }}
-                        className="absolute inset-0 m-auto w-10 h-10 rounded-full bg-white/90 text-stone-900 flex items-center justify-center font-bold shadow-md hover:scale-110 transition cursor-pointer"
+                        className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-white/90 text-stone-900 flex items-center justify-center font-bold shadow-md hover:scale-110 transition cursor-pointer"
                       >
                         ▶
                       </button>
@@ -233,7 +249,7 @@ export const CreateInvitationPage = () => {
 
                     <div className="p-4 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-stone-900 text-sm">{tpl.title}</h3>
+                        <h3 className="font-bold text-stone-900 text-sm truncate">{tpl.title}</h3>
                         <span className="text-xs font-extrabold text-stone-900">${tpl.price}</span>
                       </div>
                       <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
@@ -251,7 +267,7 @@ export const CreateInvitationPage = () => {
                           : 'border border-stone-200 text-stone-700 hover:bg-stone-50'
                       }`}
                     >
-                      {selectedTemplate?.id === tpl.id ? '✓ Selected Template' : 'Choose This Style'}
+                      {selectedTemplate?.id === tpl.id ? '✓ Selected Style' : 'Choose This Style'}
                     </button>
                   </div>
                 </div>
@@ -674,21 +690,21 @@ export const CreateInvitationPage = () => {
         </div>
       )}
 
-      {/* Video Modal Preview */}
+      {/* Video Modal Preview (Vertical 9:16 Short Video) */}
       {activePreviewVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="bg-stone-950 p-4 rounded-2xl max-w-lg w-full space-y-3">
-            <div className="flex items-center justify-between text-white text-xs font-bold">
-              <span>Sample Video Preview</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
+          <div className="bg-stone-950 p-4 rounded-3xl max-w-sm w-full space-y-3 shadow-2xl border border-stone-800">
+            <div className="flex items-center justify-between text-white text-xs font-bold px-1">
+              <span>Vertical Short Video Preview</span>
               <button
                 type="button"
                 onClick={() => setActivePreviewVideo(null)}
-                className="text-stone-400 hover:text-white"
+                className="w-6 h-6 rounded-full bg-stone-800 text-stone-300 hover:text-white flex items-center justify-center"
               >
                 ✕
               </button>
             </div>
-            <div className="aspect-video bg-black rounded-xl overflow-hidden">
+            <div className="aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-inner">
               <VideoPlayer url={activePreviewVideo} />
             </div>
           </div>

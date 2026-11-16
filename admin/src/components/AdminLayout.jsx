@@ -83,22 +83,26 @@ export const AdminLayout = () => {
 
       {/* Main View */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-white border-b border-stone-200/80 flex items-center justify-between px-8 sticky top-0 z-30 shadow-2xs">
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-stone-500 font-medium">Workspace:</span>
-            <span className="text-xs font-bold text-stone-800">Wedding Invitation Studio</span>
-          </div>
+        <header className="h-16 bg-white border-b border-stone-200/80 sticky top-0 z-30 shadow-2xs">
+          <div className="max-w-7xl mx-auto w-full h-full flex items-center justify-between px-8">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-stone-500 font-medium">Workspace:</span>
+              <span className="text-xs font-bold text-stone-800">Wedding Invitation Studio</span>
+            </div>
 
-          <div className="flex items-center gap-3">
-            <Badge variant="purple">Admin Role</Badge>
-            <span className="text-xs font-medium text-stone-700">
-              {adminUser?.name || adminUser?.email || 'Admin'}
-            </span>
+            <div className="flex items-center gap-3">
+              <Badge variant="purple">Admin Role</Badge>
+              <span className="text-xs font-medium text-stone-700">
+                {adminUser?.name || adminUser?.email || 'Admin'}
+              </span>
+            </div>
           </div>
         </header>
 
         <main className="p-8 flex-1 overflow-y-auto">
-          <Outlet />
+          <div className="max-w-7xl mx-auto w-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
