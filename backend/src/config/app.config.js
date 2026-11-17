@@ -14,6 +14,7 @@ export const config = {
         pass: process.env.SMTP_PASS || '',
         from: process.env.EMAIL_FROM || 'Wedding Invitation <no-reply@weddinginvitation.com>',
     },
+    adminNotificationEmail: process.env.ADMIN_NOTIFICATION_EMAIL || 'chiragsaxena728@gmail.com',
     cors: {
         clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
         adminUrl: process.env.ADMIN_URL || 'http://localhost:5174',

@@ -1,5 +1,6 @@
 import prisma from '../../config/prisma.js';
 import { ApiError } from '../../utils/ApiError.js';
+import { sendOrderNotificationToAdmin } from '../../utils/emailService.js';
 
 const generateOrderNumber = () => {
     const random = Math.floor(100000 + Math.random() * 900000);
@@ -36,7 +37,7 @@ export const createOrder = async (orderData, userId = null) => {
 
     const orderNumber = generateOrderNumber();
 
-    return prisma.invitationOrder.create({
+    const createdOrder = await prisma.invitationOrder.create({
         data: {
             orderNumber,
             templateId: templateId || null,
@@ -59,6 +60,15 @@ export const createOrder = async (orderData, userId = null) => {
             template: true,
         },
     });
+
+    // Send email notification to Admin Gmail with all submitted details for video editing
+    try {
+        await sendOrderNotificationToAdmin(createdOrder);
+    } catch (emailErr) {
+        console.error('Failed to send admin order notification email:', emailErr);
+    }
+
+    return createdOrder;
 };
 
 export const getOrderByNumber = async (orderNumber) => {
