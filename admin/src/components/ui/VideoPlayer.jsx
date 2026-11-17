@@ -10,12 +10,12 @@ export const getVideoEmbedInfo = (url) => {
     };
   }
 
-  // 2. YouTube: watch?v=ID or youtu.be/ID
-  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  // 2. YouTube: watch?v=ID, youtu.be/ID, shorts/ID
+  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
   if (ytMatch) {
     return {
       type: 'iframe',
-      src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`,
+      src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0&playsinline=1&modestbranding=1`,
     };
   }
 

@@ -15,7 +15,7 @@ export const getDirectImageUrl = (url) => {
 export const CreateInvitationPage = () => {
   const navigate = useNavigate();
 
-  // Wizard Steps: 1: Select Template, 2: Couple Details, 3: Functions (Page by Page), 4: Music & Contact, 5: Review & Submit
+  // Wizard Steps: 1: Select Template, 2: Couple Details, 3: Functions (Page by Page), 4: Delivery Contact, 5: Review & Double Check, 6: Success Confirmation
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [templates, setTemplates] = useState([]);
@@ -189,7 +189,7 @@ export const CreateInvitationPage = () => {
       }
 
       setOrderResult(data.order);
-      setStep(5);
+      setStep(6);
     } catch (err) {
       console.error('Submission error:', err);
       setSubmitError(err.message || 'Unable to connect to the studio server. Please try again.');
@@ -206,19 +206,20 @@ export const CreateInvitationPage = () => {
         <div className="sm:hidden flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-rose-800 font-bold text-[11px] tracking-wider border border-rose-200/60 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-700 animate-pulse"></span>
-            STEP {step} OF 4
+            STEP {step} OF 5
           </span>
           <span className="text-xs font-bold text-stone-800">
             {step === 1 && '1. Choose Video'}
             {step === 2 && '2. Couple Names'}
             {step === 3 && '3. Function Pages'}
-            {step === 4 && '4. Music & Details'}
+            {step === 4 && '4. Delivery Contact'}
+            {step === 5 && '5. Review & Confirm'}
           </span>
         </div>
 
         {/* Mobile Segmented Progress Bar */}
-        <div className="sm:hidden grid grid-cols-4 gap-1.5">
-          {[1, 2, 3, 4].map((s) => (
+        <div className="sm:hidden grid grid-cols-5 gap-1.5">
+          {[1, 2, 3, 4, 5].map((s) => (
             <div
               key={s}
               className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -237,12 +238,14 @@ export const CreateInvitationPage = () => {
             <span className="text-stone-300">→</span>
             <span className={step >= 3 ? 'text-rose-800 font-bold' : ''}>3. Functions (Pages)</span>
             <span className="text-stone-300">→</span>
-            <span className={step >= 4 ? 'text-rose-800 font-bold' : ''}>4. Music & Details</span>
+            <span className={step >= 4 ? 'text-rose-800 font-bold' : ''}>4. Delivery Contact</span>
+            <span className="text-stone-300">→</span>
+            <span className={step >= 5 ? 'text-rose-800 font-bold' : ''}>5. Review & Confirm</span>
           </div>
           <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
             <div
               className="bg-rose-800 h-full transition-all duration-300"
-              style={{ width: `${(step / 4) * 100}%` }}
+              style={{ width: `${(step / 5) * 100}%` }}
             />
           </div>
         </div>
@@ -254,7 +257,7 @@ export const CreateInvitationPage = () => {
       {step === 1 && (
         <div className="space-y-5 sm:space-y-8 animate-fade-in">
           <div className="text-center max-w-2xl mx-auto space-y-1.5 sm:space-y-2">
-            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">STEP 1 OF 4</span>
+            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">STEP 1 OF 5</span>
             <h1 className="font-serif text-2xl sm:text-4xl font-bold text-stone-900">
               Select Your Wedding Video Invitation
             </h1>
@@ -367,7 +370,7 @@ export const CreateInvitationPage = () => {
       {step === 2 && (
         <div className="space-y-5 sm:space-y-8 animate-fade-in max-w-2xl mx-auto">
           <div className="text-center space-y-1 sm:space-y-2">
-            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">STEP 2 OF 4</span>
+            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">STEP 2 OF 5</span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
               Bride & Groom Details
             </h2>
@@ -489,7 +492,7 @@ export const CreateInvitationPage = () => {
       {step === 3 && (
         <div className="space-y-5 sm:space-y-8 animate-fade-in max-w-3xl mx-auto">
           <div className="text-center space-y-1 sm:space-y-2">
-            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">STEP 3 OF 4</span>
+            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">STEP 3 OF 5</span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
               Function-by-Function Text
             </h2>
@@ -612,66 +615,38 @@ export const CreateInvitationPage = () => {
       )}
 
       {/* =========================================================
-          STEP 4: MUSIC & CONTACT DETAILS
+          STEP 4: DELIVERY CONTACT DETAILS
          ========================================================= */}
       {step === 4 && (
         <div className="space-y-5 sm:space-y-8 animate-fade-in max-w-2xl mx-auto">
           <div className="text-center space-y-1 sm:space-y-2">
-            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">STEP 4 OF 4</span>
+            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">
+              STEP 4 OF 5
+            </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
-              Music Choice & Delivery Contact
+              Delivery Contact Information
             </h2>
             <p className="text-[11px] sm:text-xs text-stone-500 max-w-md mx-auto leading-relaxed">
-              Provide your WhatsApp number so our video editor can share the finished invitation video directly with you.
+              Where should we send your finalized invitation video? Provide your contact details so our team can share your finished invitation directly with you.
             </p>
           </div>
 
-          <form onSubmit={handleSubmitOrder} className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-sm space-y-4 sm:space-y-6">
-            {submitError && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
-                {submitError}
-              </div>
-            )}
-            <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1">
-                Background Music / Song Choice
-              </label>
-              <input
-                type="text"
-                name="musicPreference"
-                value={formData.musicPreference}
-                onChange={handleInputChange}
-                placeholder="e.g. Kesariya (Instrumental), Canon in D, Kudmayi"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-rose-600"
-              />
-              <span className="text-[10px] text-stone-400 mt-1 block">
-                We will sync this track to your video's transitions.
-              </span>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1">
-                Custom Hashtag or Special Instructions
-              </label>
-              <textarea
-                name="customTextNotes"
-                value={formData.customTextNotes}
-                onChange={handleInputChange}
-                rows={2}
-                placeholder="e.g. Hashtag #RohAnKiPooja, please add dress code: Traditional Ethnic"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-rose-600"
-              />
-            </div>
-
-            <hr className="border-stone-100" />
-
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setStep(5);
+            }}
+            className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-sm space-y-4 sm:space-y-6"
+          >
             <div className="space-y-3.5 sm:space-y-4">
-              <h3 className="font-bold text-stone-900 text-xs uppercase tracking-wider">
-                Where should we send your finalized video?
+              <h3 className="font-bold text-stone-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                <span>📱</span> Contact Information
               </h3>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">Your Full Name *</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">
+                  Your Full Name *
+                </label>
                 <input
                   required
                   type="text"
@@ -685,7 +660,9 @@ export const CreateInvitationPage = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Email Address *</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">
+                    Email Address *
+                  </label>
                   <input
                     required
                     type="email"
@@ -718,16 +695,15 @@ export const CreateInvitationPage = () => {
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-full border border-stone-300 text-stone-700 font-semibold text-xs hover:bg-stone-50 shrink-0"
+                className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-full border border-stone-300 text-stone-700 font-semibold text-xs hover:bg-stone-50 shrink-0 cursor-pointer"
               >
                 ← Back
               </button>
               <button
                 type="submit"
-                disabled={loading}
-                className="flex-1 sm:flex-initial px-5 sm:px-9 py-2.5 sm:py-3.5 rounded-full bg-rose-800 text-white font-bold text-xs hover:bg-rose-900 shadow-md transition disabled:opacity-50 text-center"
+                className="flex-1 sm:flex-initial px-5 sm:px-9 py-2.5 sm:py-3.5 rounded-full bg-rose-800 text-white font-bold text-xs hover:bg-rose-900 shadow-md transition text-center cursor-pointer"
               >
-                {loading ? 'Submitting Details...' : 'Submit Invitation Order 🚀'}
+                Review & Double Check Info →
               </button>
             </div>
           </form>
@@ -735,9 +711,217 @@ export const CreateInvitationPage = () => {
       )}
 
       {/* =========================================================
-          STEP 5: ORDER SUCCESS CONFIRMATION
+          STEP 5: REVIEW & DOUBLE-CHECK ORDER INFORMATION
          ========================================================= */}
-      {step === 5 && orderResult && (
+      {step === 5 && (
+        <div className="space-y-5 sm:space-y-8 animate-fade-in max-w-3xl mx-auto">
+          <div className="text-center space-y-1 sm:space-y-2">
+            <span className="hidden sm:inline-block text-xs uppercase font-bold text-rose-800 tracking-widest">
+              STEP 5 OF 5
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+              Review & Double Check Details
+            </h2>
+            <p className="text-[11px] sm:text-xs text-stone-500 max-w-md mx-auto leading-relaxed">
+              Please double check all names, ceremony dates, times, and delivery contact information before confirming.
+            </p>
+          </div>
+
+          {submitError && (
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+              {submitError}
+            </div>
+          )}
+
+          <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-sm space-y-5 sm:space-y-6">
+            
+            {/* 1. Selected Template */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5 min-w-0">
+                {selectedTemplate?.thumbnailUrl ? (
+                  <img
+                    src={getDirectImageUrl(selectedTemplate.thumbnailUrl)}
+                    alt={selectedTemplate.title}
+                    className="w-12 h-16 sm:w-14 sm:h-20 object-cover rounded-xl border border-stone-200 shrink-0"
+                  />
+                ) : (
+                  <div className="w-12 h-16 sm:w-14 sm:h-20 bg-rose-100/60 text-rose-800 rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 font-bold">
+                    🎬
+                  </div>
+                )}
+                <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200/60 inline-block">
+                    {selectedTemplate?.category || 'Traditional'}
+                  </span>
+                  <h4 className="font-bold text-stone-900 text-xs sm:text-sm truncate">
+                    {selectedTemplate?.title || 'Wedding Video Invitation'}
+                  </h4>
+                  <p className="text-[10px] sm:text-[11px] text-stone-500">
+                    Duration: {selectedTemplate?.duration || '60s'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="text-xs font-semibold text-rose-800 hover:text-rose-950 underline px-2 py-1 shrink-0 cursor-pointer"
+              >
+                Change
+              </button>
+            </div>
+
+            {/* 2. Couple & Parents Information */}
+            <div className="space-y-2.5 pt-2 border-t border-stone-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800 flex items-center gap-1.5">
+                  <span>💍</span> Couple & Parents Details
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="text-xs font-semibold text-rose-800 hover:text-rose-950 underline cursor-pointer"
+                >
+                  Edit
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 bg-stone-50/70 p-3.5 rounded-xl border border-stone-100 text-xs">
+                <div>
+                  <span className="text-stone-400 font-medium block text-[10px] sm:text-[11px]">Bride's Name</span>
+                  <span className="font-bold text-stone-800">{formData.brideName || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 font-medium block text-[10px] sm:text-[11px]">Groom's Name</span>
+                  <span className="font-bold text-stone-800">{formData.groomName || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 font-medium block text-[10px] sm:text-[11px]">Bride's Parents</span>
+                  <span className="text-stone-700">{formData.brideParents || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 font-medium block text-[10px] sm:text-[11px]">Groom's Parents</span>
+                  <span className="text-stone-700">{formData.groomParents || '—'}</span>
+                </div>
+                {/* Dynamic custom fields if any */}
+                {Object.keys(formData.customFields || {}).length > 0 && (
+                  <div className="sm:col-span-2 pt-2 border-t border-stone-200/60 space-y-1">
+                    {Object.entries(formData.customFields).map(([k, v]) => (
+                      <div key={k} className="flex items-center justify-between text-[11px]">
+                        <span className="text-stone-500 capitalize">{k}:</span>
+                        <span className="font-medium text-stone-800">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 3. Function & Ceremony Itinerary */}
+            <div className="space-y-2.5 pt-2 border-t border-stone-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800 flex items-center gap-1.5">
+                  <span>🗓️</span> Functions & Ceremonies ({formData.events.length})
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  className="text-xs font-semibold text-rose-800 hover:text-rose-950 underline cursor-pointer"
+                >
+                  Edit
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {formData.events.map((ev, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-xl bg-stone-50/70 border border-stone-100 text-xs space-y-1"
+                  >
+                    <div className="flex items-center justify-between font-bold text-stone-900">
+                      <span>
+                        Page {ev.pageNumber}: {ev.name}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-stone-600 pt-0.5">
+                      <div>
+                        <span className="text-stone-400">Date & Time: </span>
+                        <span className="font-medium text-stone-800">
+                          {ev.date || '—'} {ev.time ? `at ${ev.time}` : ''}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-stone-400">Venue: </span>
+                        <span className="font-medium text-stone-800">{ev.venue || '—'}</span>
+                      </div>
+                      {ev.address && (
+                        <div className="sm:col-span-2 text-stone-500">
+                          <span className="text-stone-400">Address: </span>
+                          {ev.address}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Delivery Contact Details */}
+            <div className="space-y-2.5 pt-2 border-t border-stone-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800 flex items-center gap-1.5">
+                  <span>📬</span> Final Video Delivery Contact
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setStep(4)}
+                  className="text-xs font-semibold text-rose-800 hover:text-rose-950 underline cursor-pointer"
+                >
+                  Edit
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 bg-stone-50/70 p-3.5 rounded-xl border border-stone-100 text-xs">
+                <div>
+                  <span className="text-stone-400 font-medium block text-[10px] sm:text-[11px]">Full Name</span>
+                  <span className="font-bold text-stone-800">{formData.clientName}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 font-medium block text-[10px] sm:text-[11px]">Email</span>
+                  <span className="font-medium text-stone-800 break-all">{formData.clientEmail}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 font-medium block text-[10px] sm:text-[11px]">WhatsApp Number</span>
+                  <span className="font-bold text-stone-800">{formData.clientPhone}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between gap-3 pt-5 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => setStep(4)}
+                className="px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-full border border-stone-300 text-stone-700 font-semibold text-xs hover:bg-stone-50 shrink-0 cursor-pointer"
+              >
+                ← Back
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitOrder}
+                disabled={loading}
+                className="flex-1 sm:flex-initial px-6 sm:px-10 py-3 sm:py-3.5 rounded-full bg-rose-800 hover:bg-rose-900 text-white font-bold text-xs sm:text-sm shadow-md transition disabled:opacity-50 text-center cursor-pointer"
+              >
+                {loading ? 'Submitting Details...' : 'Submit Invitation Order 🚀'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          STEP 6: ORDER SUCCESS CONFIRMATION
+         ========================================================= */}
+      {step === 6 && orderResult && (
         <div className="bg-white p-6 sm:p-12 rounded-2xl sm:rounded-3xl border border-rose-100 shadow-md max-w-2xl mx-auto text-center space-y-5 sm:space-y-6 animate-fade-in">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-2xl sm:text-3xl font-bold">
             ✓
@@ -751,7 +935,7 @@ export const CreateInvitationPage = () => {
               We are crafting your wedding invitation video!
             </h2>
             <p className="text-[11px] sm:text-xs text-stone-500 max-w-md mx-auto leading-relaxed">
-              Our video team is customizing your selected template with your exact names, ceremonies, and music.
+              Our video team is customizing your selected template with your exact names and ceremonies.
             </p>
           </div>
 
@@ -781,19 +965,29 @@ export const CreateInvitationPage = () => {
 
       {/* Video Modal Preview (Vertical 9:16 Short Video) */}
       {activePreviewVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-xs">
-          <div className="bg-stone-950 p-3 sm:p-4 rounded-2xl sm:rounded-3xl max-w-xs sm:max-w-sm w-full space-y-3 shadow-2xl border border-stone-800">
-            <div className="flex items-center justify-between text-white text-xs font-bold px-1">
-              <span>Vertical Short Video Preview</span>
+        <div
+          onClick={() => setActivePreviewVideo(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-stone-950 p-3 sm:p-4 rounded-2xl sm:rounded-3xl w-[min(92vw,360px)] sm:max-w-sm space-y-3 shadow-2xl border border-stone-800 flex flex-col max-h-[92vh]"
+          >
+            <div className="flex items-center justify-between text-white text-xs font-bold px-1 shrink-0">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                Video Invitation Preview
+              </span>
               <button
                 type="button"
                 onClick={() => setActivePreviewVideo(null)}
-                className="w-6 h-6 rounded-full bg-stone-800 text-stone-300 hover:text-white flex items-center justify-center"
+                className="w-7 h-7 rounded-full bg-stone-800 text-stone-300 hover:text-white flex items-center justify-center text-sm font-bold transition hover:bg-stone-700 cursor-pointer"
+                title="Close Preview"
               >
                 ✕
               </button>
             </div>
-            <div className="aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-inner">
+            <div className="aspect-[9/16] w-full bg-black rounded-2xl overflow-hidden shadow-inner relative flex-1 min-h-0">
               <VideoPlayer url={activePreviewVideo} />
             </div>
           </div>

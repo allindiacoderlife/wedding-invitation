@@ -5,17 +5,18 @@ export const getVideoEmbedInfo = (url) => {
   const gDriveMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
   if (gDriveMatch) {
     return {
-      type: 'iframe',
+      type: 'gdrive',
+      id: gDriveMatch[1],
       src: `https://drive.google.com/file/d/${gDriveMatch[1]}/preview`,
     };
   }
 
-  // 2. YouTube: watch?v=ID or youtu.be/ID
-  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  // 2. YouTube: watch?v=ID, youtu.be/ID, shorts/ID
+  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
   if (ytMatch) {
     return {
       type: 'iframe',
-      src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`,
+      src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0&playsinline=1&modestbranding=1`,
     };
   }
 
@@ -24,7 +25,7 @@ export const getVideoEmbedInfo = (url) => {
   if (vimeoMatch) {
     return {
       type: 'iframe',
-      src: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`,
+      src: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&playsinline=1`,
     };
   }
 
@@ -46,15 +47,17 @@ export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true 
     );
   }
 
-  if (info.type === 'iframe') {
+  if (info.type === 'gdrive' || info.type === 'iframe') {
     return (
-      <iframe
-        src={info.src}
-        title="Wedding Invitation Video Preview"
-        className={`w-full h-full border-0 rounded-xl ${className}`}
-        allow="autoplay; fullscreen"
-        allowFullScreen
-      />
+      <div className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center rounded-xl">
+        <iframe
+          src={info.src}
+          title="Wedding Invitation Video Preview"
+          className={`w-full h-full border-0 rounded-xl ${className}`}
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
     );
   }
 
@@ -64,6 +67,7 @@ export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true 
       controls
       autoPlay={autoPlay}
       playsInline
+      preload="metadata"
       className={`w-full h-full object-contain bg-black rounded-xl ${className}`}
     />
   );
