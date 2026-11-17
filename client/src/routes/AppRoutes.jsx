@@ -20,13 +20,13 @@ export const AppRoutes = () => {
   return (
     <Routes>
       {/* Client Active Route: Create Invitation Only */}
-      <Route element={<ClientLayout />}>
-        <Route path="/" element={<CreateInvitationPage />} />
-        <Route path="/create-invitation" element={<CreateInvitationPage />} />
+      {/* <Route element={<ClientLayout />}> */}
+      <Route path="/" element={<CreateInvitationPage />} />
+      <Route path="/create-invitation" element={<CreateInvitationPage />} />
 
-        {/* Redirect any other path directly to /create-invitation */}
-        <Route path="*" element={<Navigate to="/create-invitation" replace />} />
-      </Route>
+      {/* Redirect any other path directly to /create-invitation */}
+      <Route path="*" element={<Navigate to="/create-invitation" replace />} />
+      {/* </Route> */}
 
       {/* 
       ============================================================================
