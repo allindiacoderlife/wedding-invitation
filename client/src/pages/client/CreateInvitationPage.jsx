@@ -321,7 +321,6 @@ export const CreateInvitationPage = () => {
                     <div className="p-2.5 sm:p-4 space-y-1 sm:space-y-1.5">
                       <div className="flex items-center justify-between gap-1">
                         <h3 className="font-bold text-stone-900 text-xs sm:text-sm truncate">{tpl.title}</h3>
-                        <span className="text-[11px] sm:text-xs font-extrabold text-stone-900">${tpl.price}</span>
                       </div>
                       <p className="text-[10px] sm:text-[11px] text-stone-500 line-clamp-1 sm:line-clamp-2 leading-relaxed">
                         {tpl.description}
@@ -733,58 +732,46 @@ export const CreateInvitationPage = () => {
       )}
 
       {/* =========================================================
-          STEP 5: ORDER SUCCESS CONFIRMATION & TRACKING
+          STEP 5: ORDER SUCCESS CONFIRMATION
          ========================================================= */}
       {step === 5 && orderResult && (
-        <div className="bg-white p-5 sm:p-12 rounded-2xl sm:rounded-3xl border border-rose-100 shadow-md max-w-2xl mx-auto text-center space-y-4 sm:space-y-6 animate-fade-in">
+        <div className="bg-white p-6 sm:p-12 rounded-2xl sm:rounded-3xl border border-rose-100 shadow-md max-w-2xl mx-auto text-center space-y-5 sm:space-y-6 animate-fade-in">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-2xl sm:text-3xl font-bold">
             ✓
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-emerald-600">
-              ORDER RECEIVED SUCCESSFULLY
+              INVITATION DETAILS SUBMITTED SUCCESSFULLY
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
               We are crafting your wedding invitation video!
             </h2>
             <p className="text-[11px] sm:text-xs text-stone-500 max-w-md mx-auto leading-relaxed">
-              Our video team is editing your template with your exact text, functions, and music.
+              Our video team is customizing your selected template with your exact names, ceremonies, and music.
             </p>
           </div>
 
-          {/* Tracking Number Box */}
-          <div className="bg-stone-50 border border-stone-200 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 max-w-sm mx-auto space-y-1">
-            <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">
-              Your Order Tracking Number
-            </span>
-            <p className="font-mono text-xl sm:text-2xl font-extrabold text-stone-900 tracking-wider">
-              {orderResult.orderNumber}
-            </p>
-          </div>
-
-          <div className="text-xs text-stone-600 text-left bg-rose-50/50 p-3.5 sm:p-4 rounded-xl border border-rose-100 space-y-1.5 sm:space-y-2">
+          <div className="text-xs text-stone-600 text-left bg-rose-50/50 p-4 rounded-xl border border-rose-100 space-y-2">
             <p><strong>Couple:</strong> {orderResult.brideName} & {orderResult.groomName}</p>
             <p><strong>Functions:</strong> {orderResult.events?.length} Ceremonies registered</p>
             <p><strong>Delivery Contact:</strong> WhatsApp {orderResult.clientPhone}</p>
-            <p className="text-[10px] sm:text-[11px] text-stone-500 pt-1 border-t border-rose-100/60">
-              You will receive an update once the final video is rendered. You can also track your order status anytime!
+            <p className="text-[11px] text-stone-500 pt-1.5 border-t border-rose-100/60 leading-relaxed">
+              Your invitation request has been received. Our team will render the finalized video and send it directly to your WhatsApp!
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 pt-2">
-            <Link
-              to={`/track-order?orderNumber=${encodeURIComponent(orderResult.orderNumber)}`}
-              className="w-full sm:w-auto px-6 py-3 rounded-full bg-stone-900 text-white font-bold text-xs hover:bg-black transition shadow-xs text-center"
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setOrderResult(null);
+                setStep(1);
+              }}
+              className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-rose-800 text-white font-bold text-xs hover:bg-rose-900 transition shadow-sm text-center"
             >
-              Track Video Status 🔍
-            </Link>
-            <Link
-              to="/"
-              className="w-full sm:w-auto px-6 py-3 rounded-full border border-stone-300 text-stone-700 font-bold text-xs hover:bg-stone-50 transition text-center"
-            >
-              Return to Home
-            </Link>
+              Create Another Video Invitation ✨
+            </button>
           </div>
         </div>
       )}

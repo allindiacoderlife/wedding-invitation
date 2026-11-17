@@ -147,7 +147,7 @@ export const OrdersPage = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-stone-50 text-[10px] uppercase font-bold text-stone-500 border-b border-stone-100">
                 <tr>
-                  <th className="py-3 px-4">Order ID</th>
+                  <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Couple</th>
                   <th className="py-3 px-4">Functions</th>
                   <th className="py-3 px-4">Music Choice</th>
@@ -162,7 +162,7 @@ export const OrdersPage = () => {
                     <td colSpan={7} className="py-12 text-center text-stone-500">
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <span className="text-xl animate-spin">⏳</span>
-                        <p className="text-xs font-semibold text-stone-600">Loading orders...</p>
+                        <p className="text-xs font-semibold text-stone-600">Loading submissions...</p>
                       </div>
                     </td>
                   </tr>
@@ -171,7 +171,7 @@ export const OrdersPage = () => {
                     <td colSpan={7} className="py-16 text-center text-stone-500">
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <span className="text-3xl">💌</span>
-                        <p className="font-semibold text-stone-700 text-sm">No Client Video Orders Yet</p>
+                        <p className="font-semibold text-stone-700 text-sm">No Client Video Submissions Yet</p>
                         <p className="text-stone-400 text-xs max-w-sm">
                           When couples fill out the invitation form on the website, their submissions will appear here for you to customize and render.
                         </p>
@@ -181,7 +181,9 @@ export const OrdersPage = () => {
                 ) : (
                   filteredOrders.map((ord) => (
                     <tr key={ord.id} className="hover:bg-stone-50/60 transition">
-                      <td className="py-3 px-4 font-mono font-bold text-stone-900">{ord.orderNumber}</td>
+                      <td className="py-3 px-4 text-stone-500 font-medium">
+                        {ord.createdAt ? new Date(ord.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recent'}
+                      </td>
                       <td className="py-3 px-4">
                         <p className="font-semibold text-stone-800">
                           {ord.brideName} & {ord.groomName}
@@ -234,7 +236,7 @@ export const OrdersPage = () => {
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle>Order Details: {selectedOrder?.orderNumber}</DialogTitle>
+              <DialogTitle>Submission: {selectedOrder?.brideName} & {selectedOrder?.groomName}</DialogTitle>
               <DialogDescription>
                 Full page-by-page wedding text submitted by {selectedOrder?.clientName}
               </DialogDescription>

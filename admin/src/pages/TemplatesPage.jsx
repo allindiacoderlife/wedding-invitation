@@ -421,7 +421,6 @@ export const TemplatesPage = () => {
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-sm font-bold truncate">{tpl.title}</CardTitle>
-                    <span className="text-xs font-extrabold text-stone-900">${tpl.price}</span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                     <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[10px] font-semibold">
@@ -541,7 +540,7 @@ export const TemplatesPage = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1">Theme Style</label>
               <Select name="category" value={form.category} onChange={handleInputChange}>
@@ -560,17 +559,6 @@ export const TemplatesPage = () => {
                 value={form.duration}
                 onChange={handleInputChange}
                 placeholder="e.g. 30s, 60s"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">Price ($)</label>
-              <Input
-                type="number"
-                name="price"
-                value={form.price}
-                onChange={handleInputChange}
-                placeholder="49"
               />
             </div>
           </div>
