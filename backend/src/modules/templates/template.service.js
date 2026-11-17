@@ -15,10 +15,15 @@ export const getAllTemplates = async ({ category, search }) => {
         ];
     }
 
-    return prisma.template.findMany({
+    const templates = await prisma.template.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'asc' },
     });
+
+    // Natural alphanumeric sort so "Video 1", "Video 2", "Video 3" appear in correct order
+    return templates.sort((a, b) =>
+        (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' })
+    );
 };
 
 export const getTemplateById = async (id) => {

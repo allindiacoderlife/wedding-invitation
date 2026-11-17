@@ -105,7 +105,10 @@ export const TemplatesPage = () => {
       const res = await fetch(`${API_BASE_URL}/api/templates`);
       const data = await res.json();
       if (data.success && Array.isArray(data.templates)) {
-        setTemplates(data.templates);
+        const sortedTemplates = [...data.templates].sort((a, b) =>
+          (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' })
+        );
+        setTemplates(sortedTemplates);
       } else {
         setTemplates([]);
       }

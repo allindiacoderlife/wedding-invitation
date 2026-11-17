@@ -103,8 +103,11 @@ export const CreateInvitationPage = () => {
       const res = await fetch(`${API_BASE_URL}/api/templates`);
       const data = await res.json();
       if (data.success && Array.isArray(data.templates) && data.templates.length > 0) {
-        setTemplates(data.templates);
-        handleSelectTemplate(data.templates[0]);
+        const sortedTemplates = [...data.templates].sort((a, b) =>
+          (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' })
+        );
+        setTemplates(sortedTemplates);
+        handleSelectTemplate(sortedTemplates[0]);
       } else {
         setTemplates([]);
         setSelectedTemplate(null);
