@@ -6,6 +6,7 @@ import { Input, Textarea, Select } from '../components/ui/Input';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/Dialog';
 import { VideoPlayer } from '../components/ui/VideoPlayer';
 import { API_BASE_URL } from '../config/api';
+import { uploadToCloudinary } from '../utils/cloudinary';
 
 export const getDirectImageUrl = (url) => {
   if (!url) return '';
@@ -93,6 +94,94 @@ export const TemplatesPage = () => {
   });
 
   const [activePreviewVideo, setActivePreviewVideo] = useState(null);
+
+  // Cloudinary Direct Upload States
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const [thumbnailUploadProgress, setThumbnailUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState('');
+  const [isCloudinaryConfigOpen, setIsCloudinaryConfigOpen] = useState(false);
+  const [cloudName, setCloudName] = useState(
+    () => localStorage.getItem('cloudinary_cloud_name') || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || ''
+  );
+  const [uploadPreset, setUploadPreset] = useState(
+    () => localStorage.getItem('cloudinary_upload_preset') || import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || ''
+  );
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!cloudName || !uploadPreset) {
+      setIsCloudinaryConfigOpen(true);
+      return;
+    }
+
+    setUploadError('');
+    setVideoUploading(true);
+    setVideoUploadProgress(0);
+
+    try {
+      const result = await uploadToCloudinary(
+        file,
+        (percent) => setVideoUploadProgress(percent),
+        { cloudName, uploadPreset }
+      );
+
+      setForm((prev) => ({
+        ...prev,
+        videoUrl: result.videoUrl || result.secure_url,
+        // Automatically set generated video poster if no thumbnail is set yet
+        thumbnailUrl: prev.thumbnailUrl || result.thumbnailUrl,
+        duration: result.durationSeconds ? `${result.durationSeconds}s` : prev.duration,
+      }));
+    } catch (err) {
+      console.error('Cloudinary video upload failed:', err);
+      setUploadError(err.message || 'Failed to upload video to Cloudinary');
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
+  const handleThumbnailUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!cloudName || !uploadPreset) {
+      setIsCloudinaryConfigOpen(true);
+      return;
+    }
+
+    setUploadError('');
+    setThumbnailUploading(true);
+    setThumbnailUploadProgress(0);
+
+    try {
+      const result = await uploadToCloudinary(
+        file,
+        (percent) => setThumbnailUploadProgress(percent),
+        { cloudName, uploadPreset }
+      );
+
+      setForm((prev) => ({
+        ...prev,
+        thumbnailUrl: result.thumbnailUrl || result.secure_url,
+      }));
+    } catch (err) {
+      console.error('Cloudinary thumbnail upload failed:', err);
+      setUploadError(err.message || 'Failed to upload thumbnail to Cloudinary');
+    } finally {
+      setThumbnailUploading(false);
+    }
+  };
+
+  const handleSaveCloudinaryConfig = (e) => {
+    e.preventDefault();
+    localStorage.setItem('cloudinary_cloud_name', cloudName.trim());
+    localStorage.setItem('cloudinary_upload_preset', uploadPreset.trim());
+    setIsCloudinaryConfigOpen(false);
+  };
 
   // Initial fetch
   useEffect(() => {
@@ -346,9 +435,21 @@ export const TemplatesPage = () => {
           </p>
         </div>
 
-        <Button variant="primary" size="sm" onClick={handleOpenCreate}>
-          + Add New Video Template
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => setIsCloudinaryConfigOpen(true)}
+            className="flex items-center gap-1.5 text-xs text-stone-600 cursor-pointer"
+            title="Configure Cloudinary Cloud Name and Upload Preset"
+          >
+            <span>☁️</span> Cloudinary {cloudName ? 'Connected' : 'Setup'}
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleOpenCreate}>
+            + Add New Video Template
+          </Button>
+        </div>
       </div>
 
       {/* Templates Grid / Empty State */}
@@ -496,6 +597,108 @@ export const TemplatesPage = () => {
               onChange={handleInputChange}
               placeholder="e.g. Royal Gold Floral Wedding Invitation"
             />
+          </div>
+
+          {/* Cloudinary Direct File Upload Box */}
+          <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200/90 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                <span>☁️</span> Direct Cloudinary Upload (Recommended)
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsCloudinaryConfigOpen(true)}
+                className="text-[10px] text-rose-700 hover:text-rose-900 underline font-medium cursor-pointer"
+              >
+                {cloudName ? `Cloud: ${cloudName}` : '⚙️ Connect Cloudinary'}
+              </button>
+            </div>
+
+            {uploadError && (
+              <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px]">
+                {uploadError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {/* Video File Upload */}
+              <div>
+                <label className="block text-[11px] font-medium text-stone-600 mb-1">
+                  Upload Video File (.mp4, 9:16)
+                </label>
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-rose-300 hover:border-rose-500 bg-white hover:bg-rose-50/30 rounded-xl p-3 cursor-pointer transition text-center min-h-[70px]">
+                  <input
+                    type="file"
+                    accept="video/mp4,video/quicktime,video/webm"
+                    onChange={handleVideoUpload}
+                    disabled={videoUploading}
+                    className="hidden"
+                  />
+                  {videoUploading ? (
+                    <div className="w-full space-y-1">
+                      <span className="text-[11px] font-bold text-rose-800">
+                        Uploading... {videoUploadProgress}%
+                      </span>
+                      <div className="w-full bg-rose-100 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-rose-700 h-full transition-all duration-200"
+                          style={{ width: `${videoUploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-rose-800">
+                      <span className="text-base">🎬</span>
+                      <span className="text-xs font-semibold">
+                        {form.videoUrl?.includes('cloudinary') ? 'Replace Cloudinary Video' : 'Choose Video File'}
+                      </span>
+                    </div>
+                  )}
+                </label>
+                <span className="text-[9px] text-stone-400 mt-1 block">
+                  Automatically extracts poster thumbnail image.
+                </span>
+              </div>
+
+              {/* Thumbnail File Upload */}
+              <div>
+                <label className="block text-[11px] font-medium text-stone-600 mb-1">
+                  Upload Custom Cover Image (Optional)
+                </label>
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-300 hover:border-stone-400 bg-white hover:bg-stone-50 rounded-xl p-3 cursor-pointer transition text-center min-h-[70px]">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailUpload}
+                    disabled={thumbnailUploading}
+                    className="hidden"
+                  />
+                  {thumbnailUploading ? (
+                    <div className="w-full space-y-1">
+                      <span className="text-[11px] font-bold text-stone-800">
+                        Uploading... {thumbnailUploadProgress}%
+                      </span>
+                      <div className="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-stone-700 h-full transition-all duration-200"
+                          style={{ width: `${thumbnailUploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-stone-700">
+                      <span className="text-base">🖼️</span>
+                      <span className="text-xs font-semibold">
+                        {form.thumbnailUrl ? 'Replace Cover Image' : 'Choose Cover Image'}
+                      </span>
+                    </div>
+                  )}
+                </label>
+                <span className="text-[9px] text-stone-400 mt-1 block">
+                  Upload a custom vertical poster photo.
+                </span>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -731,6 +934,69 @@ export const TemplatesPage = () => {
             Close Player
           </Button>
         </DialogFooter>
+      </Dialog>
+
+      {/* Cloudinary Configuration Dialog */}
+      <Dialog open={isCloudinaryConfigOpen} onClose={() => setIsCloudinaryConfigOpen(false)} maxWidth="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span>☁️</span> Cloudinary Upload Settings
+          </DialogTitle>
+          <DialogDescription>
+            Configure your Cloudinary credentials for direct browser-to-cloud video uploading.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSaveCloudinaryConfig} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">
+              Cloudinary Cloud Name *
+            </label>
+            <Input
+              required
+              value={cloudName}
+              onChange={(e) => setCloudName(e.target.value)}
+              placeholder="e.g. dxyz123abc"
+            />
+            <span className="text-[10px] text-stone-400 mt-0.5 block">
+              Found on your main Cloudinary Dashboard (e.g. &quot;Cloud name: your_name&quot;).
+            </span>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">
+              Unsigned Upload Preset *
+            </label>
+            <Input
+              required
+              value={uploadPreset}
+              onChange={(e) => setUploadPreset(e.target.value)}
+              placeholder="e.g. wedding_invitations"
+            />
+            <span className="text-[10px] text-stone-400 mt-0.5 block">
+              Created in Cloudinary Settings ⚙️ &gt; Upload &gt; Upload Presets &gt; Signing Mode: Unsigned.
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] space-y-1">
+            <span className="font-bold block">💡 How to get these 2 values (Free &amp; Takes 2 mins):</span>
+            <ol className="list-decimal list-inside space-y-0.5 text-amber-800">
+              <li>Log in to your free <a href="https://cloudinary.com/console" target="_blank" rel="noreferrer" className="underline font-bold">Cloudinary Console</a>.</li>
+              <li>Copy your <strong>Cloud name</strong> from Dashboard and paste above.</li>
+              <li>Go to <strong>Settings ⚙️ &rarr; Upload &rarr; Upload Presets</strong>.</li>
+              <li>Click <strong>Add Upload Preset</strong>, set Signing Mode to <strong>Unsigned</strong>, save, and paste the preset name above.</li>
+            </ol>
+          </div>
+
+          <DialogFooter className="pt-2">
+            <Button variant="outline" type="button" onClick={() => setIsCloudinaryConfigOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              Save Settings
+            </Button>
+          </DialogFooter>
+        </form>
       </Dialog>
     </div>
   );
