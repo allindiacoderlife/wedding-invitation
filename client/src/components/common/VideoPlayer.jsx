@@ -1,13 +1,18 @@
+import { useState, useEffect } from 'react';
+
 export const getVideoEmbedInfo = (url) => {
   if (!url) return null;
 
   // 1. Google Drive: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
   const gDriveMatch = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/);
   if (gDriveMatch) {
+    const fileId = gDriveMatch[1];
     return {
       type: 'gdrive',
-      id: gDriveMatch[1],
-      src: `https://drive.google.com/file/d/${gDriveMatch[1]}/preview`,
+      id: fileId,
+      // Direct streaming URL (plays in clean native HTML5 video tag without Google Drive's iframe clutter)
+      directSrc: `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`,
+      fallbackIframeSrc: `https://drive.google.com/file/d/${fileId}/preview`,
     };
   }
 
@@ -37,7 +42,13 @@ export const getVideoEmbedInfo = (url) => {
 };
 
 export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true }) => {
+  const [directFailed, setDirectFailed] = useState(false);
   const info = getVideoEmbedInfo(url);
+
+  // Reset fallback state if the URL changes
+  useEffect(() => {
+    setDirectFailed(false);
+  }, [url]);
 
   if (!info) {
     return (
@@ -47,7 +58,45 @@ export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true 
     );
   }
 
-  if (info.type === 'gdrive' || info.type === 'iframe') {
+  // For Google Drive: Render directly in clean native HTML5 video tag
+  // This completely eliminates:
+  // - The Google Drive popout icon [↗]
+  // - The 10s rewind/forward buttons covering the video text
+  // - The stacked, overlapping controls on mobile
+  if (info.type === 'gdrive') {
+    if (!directFailed) {
+      return (
+        <video
+          key={info.id}
+          src={info.directSrc}
+          controls
+          autoPlay={autoPlay}
+          playsInline
+          preload="metadata"
+          className={`w-full h-full object-contain bg-black rounded-xl ${className}`}
+          onError={() => {
+            console.warn('Google Drive direct stream fallback to iframe for ID:', info.id);
+            setDirectFailed(true);
+          }}
+        />
+      );
+    }
+
+    // Fallback to iframe only if direct stream is restricted
+    return (
+      <div className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center rounded-xl">
+        <iframe
+          src={info.fallbackIframeSrc}
+          title="Wedding Invitation Video Preview"
+          className={`w-full h-full border-0 rounded-xl ${className}`}
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  if (info.type === 'iframe') {
     return (
       <div className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center rounded-xl">
         <iframe
