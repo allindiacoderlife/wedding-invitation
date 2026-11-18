@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../config/api';
 
 export const getVideoEmbedInfo = (url) => {
   if (!url) return null;
@@ -10,6 +11,7 @@ export const getVideoEmbedInfo = (url) => {
     return {
       type: 'gdrive',
       id: fileId,
+      streamSrc: `${API_BASE_URL}/api/templates/stream/${fileId}`,
       directSrc: `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`,
       fallbackIframeSrc: `https://drive.google.com/file/d/${fileId}/preview`,
     };
@@ -41,11 +43,11 @@ export const getVideoEmbedInfo = (url) => {
 };
 
 export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true }) => {
-  const [directFailed, setDirectFailed] = useState(false);
+  const [streamError, setStreamError] = useState(false);
   const info = getVideoEmbedInfo(url);
 
   useEffect(() => {
-    setDirectFailed(false);
+    setStreamError(false);
   }, [url]);
 
   if (!info) {
@@ -57,19 +59,19 @@ export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true 
   }
 
   if (info.type === 'gdrive') {
-    if (!directFailed) {
+    if (!streamError) {
       return (
         <video
           key={info.id}
-          src={info.directSrc}
+          src={info.streamSrc}
           controls
           autoPlay={autoPlay}
           playsInline
           preload="metadata"
           className={`w-full h-full object-contain bg-black rounded-xl ${className}`}
           onError={() => {
-            console.warn('Google Drive direct stream fallback to iframe for ID:', info.id);
-            setDirectFailed(true);
+            console.warn('Backend video stream failed, falling back to iframe');
+            setStreamError(true);
           }}
         />
       );
@@ -83,6 +85,10 @@ export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true 
           className={`w-full h-full border-0 rounded-xl ${className}`}
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
+        />
+        <div
+          className="absolute top-0 right-0 w-16 h-14 z-20 cursor-default"
+          onClick={(e) => e.stopPropagation()}
         />
       </div>
     );

@@ -5,6 +5,7 @@ import {
     createTemplate,
     updateTemplate,
     deleteTemplate,
+    streamGoogleDriveVideo,
 } from './template.controller.js';
 import { authenticate, authorize } from '../../middleware/auth.middleware.js';
 
@@ -12,6 +13,7 @@ const router = express.Router();
 
 // Public routes
 router.get('/', listTemplates);
+router.get('/stream/:fileId', streamGoogleDriveVideo);
 router.get('/:id', getTemplate);
 
 // Admin only routes

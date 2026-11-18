@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../config/api';
 
 export const getVideoEmbedInfo = (url) => {
   if (!url) return null;
@@ -10,7 +11,8 @@ export const getVideoEmbedInfo = (url) => {
     return {
       type: 'gdrive',
       id: fileId,
-      // Direct streaming URL (plays in clean native HTML5 video tag without Google Drive's iframe clutter)
+      // Stream via backend proxy to bypass Google Drive's CORP same-site restriction
+      streamSrc: `${API_BASE_URL}/api/templates/stream/${fileId}`,
       directSrc: `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`,
       fallbackIframeSrc: `https://drive.google.com/file/d/${fileId}/preview`,
     };
@@ -42,12 +44,12 @@ export const getVideoEmbedInfo = (url) => {
 };
 
 export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true }) => {
-  const [directFailed, setDirectFailed] = useState(false);
+  const [streamError, setStreamError] = useState(false);
   const info = getVideoEmbedInfo(url);
 
-  // Reset fallback state if the URL changes
+  // Reset fallback state when the URL changes
   useEffect(() => {
-    setDirectFailed(false);
+    setStreamError(false);
   }, [url]);
 
   if (!info) {
@@ -58,31 +60,28 @@ export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true 
     );
   }
 
-  // For Google Drive: Render directly in clean native HTML5 video tag
-  // This completely eliminates:
-  // - The Google Drive popout icon [↗]
-  // - The 10s rewind/forward buttons covering the video text
-  // - The stacked, overlapping controls on mobile
+  // For Google Drive: Stream directly as a native HTML5 video tag
+  // Completely eliminates Google Drive's pop-out icon [↗], 10s buttons, and cluttered controls
   if (info.type === 'gdrive') {
-    if (!directFailed) {
+    if (!streamError) {
       return (
         <video
           key={info.id}
-          src={info.directSrc}
+          src={info.streamSrc}
           controls
           autoPlay={autoPlay}
           playsInline
           preload="metadata"
           className={`w-full h-full object-contain bg-black rounded-xl ${className}`}
           onError={() => {
-            console.warn('Google Drive direct stream fallback to iframe for ID:', info.id);
-            setDirectFailed(true);
+            console.warn('Backend video stream failed, falling back to iframe');
+            setStreamError(true);
           }}
         />
       );
     }
 
-    // Fallback to iframe only if direct stream is restricted
+    // Fallback: If streaming proxy is unavailable, use preview iframe with popout blocker overlay
     return (
       <div className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center rounded-xl">
         <iframe
@@ -91,6 +90,11 @@ export const VideoPlayer = ({ url, className = 'w-full h-full', autoPlay = true 
           className={`w-full h-full border-0 rounded-xl ${className}`}
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
+        />
+        {/* Invisible touch overlay to prevent opening external Google Drive popout tab */}
+        <div
+          className="absolute top-0 right-0 w-16 h-14 z-20 cursor-default"
+          onClick={(e) => e.stopPropagation()}
         />
       </div>
     );
